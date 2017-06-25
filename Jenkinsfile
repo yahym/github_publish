@@ -111,7 +111,9 @@ node(){
                     //mergeComment: '',
                     //onlyAdminsMerge: false])
             //}
-        } catch(err) {
+        } 
+        }
+        catch(err) {
             currentBuild.result = 'FAILURE'
             throw err
         } finally {
