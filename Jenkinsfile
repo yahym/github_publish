@@ -74,7 +74,8 @@ node(){
         stage('Generating application *.exe'){
             echo 'Generating the application...'
             bat """
-                ${python_home}\\Scripts\\pyinstaller.exe github_publish.spec
+                rem ${python_home}\\Scripts\\pyinstaller.exe github_publish.spec
+                ../pyvenv/scripts/pyinstaller.exe github_publish.spec
             """
         }
         
@@ -122,7 +123,7 @@ node(){
 // one of the workaround
 def createVirtualEnv(String name) {
     bat """
-        c:/python-3.5.3/python -m venv ${name}
+        py -3 -m venv ${name}
     """
 }
  
