@@ -13,10 +13,15 @@ Utility functions needed by all test scripts.
 def getTestData(filename=""):
     return os.path.dirname(__file__) + "/data/" + filename
 
-class TestArgHolder(unittest.Testcase):
+class TestArgHolder(unittest.TestCase):
     
     def test_class_exists():
         assertTrue(ArgHolder)
+
+class TestArgHandler(unittest.TestCase):
+    
+    def test_class_exists():
+        assertTrue(ArgHandler)
 
 if __name__ == '__main__':
     unittest.main()
