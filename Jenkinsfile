@@ -34,7 +34,7 @@ node(){
         stage('Preparing PythonEnv 3.5.3'){
             withCredentials([usernamePassword(credentialsId: '99176a2e-9012-4b19-95f7-926d65985d05', passwordVariable: 'password', usernameVariable: 'user')]) {
                 executeIn 'pyvenv', 'python --version'
-                executeIn 'pyvenv', 'pip3.5.exe install -r ' + repo_name + '/requirements_develop.txt'
+                executeIn 'pyvenv', 'pip3 install -r ' + repo_name + '/requirements_develop.txt'
             }
         }
         
