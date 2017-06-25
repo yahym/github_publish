@@ -112,10 +112,11 @@ node(){
                     //onlyAdminsMerge: false])
             //}
         }
-        
-        stage("Cleaning workspace"){
-           echo 'Clean workspace...'
-           cleanWs deleteDirs: true
+        finally {
+            stage("Cleaning workspace"){
+               echo 'Clean workspace...'
+               cleanWs deleteDirs: true
+            }
         }
     }
 }
