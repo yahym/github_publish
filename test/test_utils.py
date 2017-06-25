@@ -16,12 +16,12 @@ def getTestData(filename=""):
 class TestArgHolder(unittest.TestCase):
     
     def test_class_exists(self):
-        assertTrue(ArgHolder)
+        self.assertTrue(ArgHolder)
 
 class TestArgHandler(unittest.TestCase):
     
     def test_class_exists(self):
-        assertTrue(ArgHandler)
+        self.assertTrue(ArgHandler)
 
 if __name__ == '__main__':
     unittest.main()
