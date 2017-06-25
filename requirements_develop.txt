@@ -1,0 +1,7 @@
+requests
+nose
+coverage
+pylint
+xmlrunner
+pypiwin32
+pyinstaller
