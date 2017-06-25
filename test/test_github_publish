@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+import os
+import sys
+import unittest
+
+thispath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.join(thispath,"github_publish"))
+
+from github_publish.github_publish import GitHubPublish
+"""
+Utility functions needed by all test scripts.
+"""
+def getTestData(filename=""):
+    return os.path.dirname(__file__) + "/data/" + filename
+
+class TestGitHubPublish(unittest.TestCase):
+    
+    def test_class_exists(self):
+        self.assertTrue(GitHubPublish)
+
+if __name__ == '__main__':
+    unittest.main()
