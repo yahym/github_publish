@@ -27,7 +27,7 @@ node(){
                     rem `.pypirc` should be copied in `%USERPROFILE%` to be able to upload to pypi-server
                     echo %USERPROFILE%
                 """
-                executeIn 'pyvenv', 'cd ' + repo_name + ' && python setup.py sdist upload'
+                executeIn 'pyvenv', 'cd ' + repo_name + ' && python setup.py sdist'
             //}
         }
         
