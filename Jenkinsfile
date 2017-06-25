@@ -9,7 +9,7 @@ node(){
     // get in trouble with python package instalation :)
     // - this is the reason for replacing 'workspace' with 'ws'
     ws("jobs/${env.JOB_NAME}/ws") {
-    
+        try{
         stage("Checkout SCM - ${env.JOB_NAME}"){
             echo 'Already done by Jenkinsfile, but need it again here for now...'
             dir (repo_name){
@@ -111,8 +111,10 @@ node(){
                     //mergeComment: '',
                     //onlyAdminsMerge: false])
             //}
-        }
-        finally {
+        } catch(err) {
+            currentBuild.result = 'FAILURE'
+            throw err
+        } finally {
             stage("Cleaning workspace"){
                echo 'Clean workspace...'
                cleanWs deleteDirs: true
