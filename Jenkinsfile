@@ -32,7 +32,7 @@ node(){
         }
         
         stage('Preparing PythonEnv 3.5.3'){
-            withCredentials([usernamePassword(credentialsId: 'd357923f-fa26-43c8-b811-9488ffce6b73', passwordVariable: 'password', usernameVariable: 'user')]) {
+            withCredentials([usernamePassword(credentialsId: '99176a2e-9012-4b19-95f7-926d65985d05', passwordVariable: 'password', usernameVariable: 'user')]) {
                 executeIn 'pyvenv', 'python --version'
                 executeIn 'pyvenv', 'pip3.5.exe install -r ' + repo_name + '/requirements_develop.txt'
             }
@@ -91,7 +91,7 @@ node(){
                 executeIn 'pyvenv', 'cd ' + repo_name + ' && python setup.py sdist upload'
             
                 echo 'Upload to GitHub Releases'
-                withCredentials([usernamePassword(credentialsId: 'd357923f-fa26-43c8-b811-9488ffce6b73', passwordVariable: 'password', usernameVariable: 'user')]) {
+                withCredentials([usernamePassword(credentialsId: '99176a2e-9012-4b19-95f7-926d65985d05', passwordVariable: 'password', usernameVariable: 'user')]) {
                     bat """
                     """
                 //}
@@ -102,7 +102,7 @@ node(){
         
         stage('Merge Pull Request'){
             echo 'GhprbPullRequestMerge - Not done yet...'
-            //withCredentials([usernamePassword(credentialsId: 'd357923f-fa26-43c8-b811-9488ffce6b73', passwordVariable: 'password', usernameVariable: 'user')]) {
+            //withCredentials([usernamePassword(credentialsId: '99176a2e-9012-4b19-95f7-926d65985d05', passwordVariable: 'password', usernameVariable: 'user')]) {
                 //step([$class: 'GhprbPullRequestMerge',
                     //allowMergeWithoutTriggerPhrase: true,
                     //deleteOnMerge: false,
