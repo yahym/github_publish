@@ -99,8 +99,10 @@ class ArgHandler():
         self.parser = parser(prog=prog)
         
         # Global optional arguments
+        self.github_server = self.parser.add_argument('--server', help='GitHub server path e.g. http://github.server.com')
         self.proxy = self.parser.add_argument('--proxy', help='Add the internet proxy, e.g. "http://user:password@server.com:8080"')
         self.version = self.parser.add_argument('--version', action='version', version="%(prog)s ("+__version__+")", help='Get program version')
+        
         
          # add a mandatory subcommand available after parsing at args.subcommand
         self.subparsers = self.parser.add_subparsers(dest='subcommand')

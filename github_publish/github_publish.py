@@ -11,32 +11,48 @@ from pprint import pprint
 from arg_parser import ArgHandler
 __author__ = 'ravi'
 
+# API urls for github
+# www.github.com
 API_URL = 'https://api.{}/repos/{}/{}/releases'
 UPLOAD_URL = 'https://uploads.{}/repos/{}/{}/releases'
 DOWNLOAD_URL = 'https://{}/{}/{}/releases'
 
+# github.enterprise.com
+ENTERPRISE_API_URL = '{}/api/v3/repos/{}/{}/releases'
+ENTERPRISE_UPLOAD_URL = '{}/api/uploads/repos/{}/{}/releases'
+ENTERPRISE_DOWNLOAD_URL = '{}/{}/{}/releases/download'
 
 class GitHubPublish(object):
     """ GitHub publisher is used to manage tags and releases on *.github.com
     
     """
     def __init__(self, security_token, owner, repo, user=None, password='x-oauth-basic', proxy=None, server='github.com'):  #=urllib.getproxies()
-        
+
+        self.server = 'github.com' if server is None else server
         self.security_token = security_token
         self.owner = owner
         self.user = self.security_token if user is None and self.security_token is not None else user
         self.password = password if password is not None else 'x-oauth-basic'
         self.repo = repo
-        self.url = API_URL.format(server, self.owner, self.repo)
-        self.upload_url = UPLOAD_URL.format(server, self.owner, self.repo)
-        self.download_url = DOWNLOAD_URL.format(server, self.owner, self.repo)
+
+        # url
+        url = API_URL if server is None else ENTERPRISE_API_URL
+        self.url = url.format(self.server, self.owner, self.repo)
+        
+        #upload_url
+        upload_url = UPLOAD_URL if server is None else ENTERPRISE_UPLOAD_URL
+        self.upload_url = upload_url.format(self.server, self.owner, self.repo)
+        # download_url
+        download_url = DOWNLOAD_URL if server is None else ENTERPRISE_DOWNLOAD_URL
+        self.download_url = download_url.format(self.server, self.owner, self.repo)
+        
         proxy_list = dict()
-        proxy_list['http'] = proxy
-        proxy_list['https'] = proxy
+        proxy_list['http'] = proxy if 'http' in proxy else ''
+        proxy_list['https'] = proxy if 'https' in proxy else ''
         self.proxy = proxy_list if proxy is not None else None
         
         # print(self.url, self.security_token, self.owner, self.repo, self.user, self.password, self.upload_url, self.proxy)
-        # print(requests.get('https://api.github.com/repos/umihai1/test/releases', proxies=self.proxy))
+        # print(requests.get('http://github.conti.de/api/v3/repos/umihai1/test/releases', proxies=self.proxy))
     
 
     def _list_releases(self):
@@ -54,7 +70,7 @@ class GitHubPublish(object):
         if assets and tag_name:
             result = self.list_assets_for_release_id(tag_name)
         elif tag_name:
-            result =  self.get_release_by_tag(tag_name)
+            result =  self._get_release_by_tag(tag_name)
         elif latest:
             result = self._get_latest()
         else:
@@ -110,20 +126,20 @@ class GitHubPublish(object):
         #pprint(release_by_tag)
         return release_by_tag
 
-    def create_release(self, tag, name=None, description=None, draft=False, prerelease=False, target=None):
+    def create_release(self, tag, name=None, description=None, draft=False, pre_release=False, target=None):
         """Create a releaseIntegrations Enabled
         
         POST /repos/:owner/:repo/releases
         """
-        
         target = "master" if target is None else target
+        
         data = {
             "tag_name": tag,
             "target_commitish": target,
             "name": name if name else tag,
             "body": description if description else tag,
             "draft": bool(draft),
-            "prerelease": bool(prerelease)
+            "prerelease": bool(pre_release)
         }
         json_data = json.dumps(data)
         response = requests.post(
@@ -195,7 +211,7 @@ class GitHubPublish(object):
         """
         release_id = self._get_release_id(tag_name)
         assets_url = '{}/{}/assets'.format(self.url, release_id)
-        print(assets_url)
+
         response = requests.get(
             assets_url,
             proxies=self.proxy, 
@@ -212,6 +228,7 @@ class GitHubPublish(object):
         """
         release_id = self._get_release_id(tag_name)
         upload_url = '{}/{}/assets?name={}'.format(self.upload_url, release_id, label)
+       
         f = open('{}'.format(file,), 'rb')
         if replace:
             self.edit_release_asset(tag_name, file, label)
@@ -238,7 +255,8 @@ class GitHubPublish(object):
         GET /repos/:owner/:repo/releases/assets/:id
         """
         release_id = self._get_release_id(tag_name)
-        asset_url = ' {}/download/{}/{}'.format(self.download_url, tag_name, artifact_name)
+        # "browser_download_url": "http://github.conti.de/uidl9955/test/releases/download/0.0.1/eval_tool-0.0.1.tar.gz.eval_tool-0.0.1.tar.gz"
+        asset_url = '{}/{}/{}'.format(self.download_url, tag_name, artifact_name)
         asset_response = requests.get(
             url=asset_url,
             proxies=self.proxy,
@@ -246,11 +264,15 @@ class GitHubPublish(object):
             auth=(self.user, self.password)
         )
         with open(artifact_name, 'wb') as f:
-            asset_response.raise_for_status()
-            for block in asset_response.iter_content(1024):
-                if not block:
-                    break
-                f.write(block)
+            if asset_response.text == 'Not Found':
+                log.error(asset_response.text + ' -> {}, {}'.format(tag_name, artifact_name))
+                return False
+            else:
+                asset_response.raise_for_status()
+                for block in asset_response.iter_content(1024):
+                    if not block:
+                        break
+                    f.write(block)
         return True
     
     def _get_release_assets(self, tag_name):
@@ -260,19 +282,23 @@ class GitHubPublish(object):
         assets = json.loads(assets_response.text)
             
         for asset in assets:
-            with open(asset['name'], 'wb') as f:
-                asset_url = ' {}/download/{}/{}'.format(self.download_url, tag_name, asset['name'])
+            artifact_name = asset['name']
+            with open(artifact_name, 'wb') as f:
+                asset_url = ' {}/{}/{}'.format(self.download_url, tag_name, artifact_name)
                 asset_response = requests.get(
                     url=asset_url,
                     proxies=self.proxy,
                     headers={'Accept': 'application/octet-stream'},
                     auth=(self.user, self.password))
-                asset_response.raise_for_status()
-
-                for block in asset_response.iter_content(1024):
-                    if not block:
-                        break
-                    f.write(block)
+                
+                if asset_response.text == 'Not Found':
+                    log.error(asset_response.text + ' -> {}, {}'.format(tag_name, artifact_name))
+                else:
+                    asset_response.raise_for_status()
+                    for block in asset_response.iter_content(1024):
+                        if not block:
+                            break
+                        f.write(block)
     
     def download(self, tag_name, artifact_name, download_all=None):
         if download_all:
@@ -288,7 +314,6 @@ class GitHubPublish(object):
         
         release_id = self._get_release_id(tag_name)
         edit_url = '{}/{}/assets/{}'.format(self.upload_url, release_id, label)
-        print(edit_url)
         f = open('{}'.format(file,), 'rb')
         edit_response = requests.patch(
             edit_url,
@@ -330,8 +355,7 @@ class GitHubPublish(object):
                 with open(file_name, 'w') as f:
                     json.dump(data, f, indent=4, sort_keys=True)
 
-if __name__ == "__main__":
-
+def main():
     # Init parser
     parser = ArgHandler(prog='GitHubPublisher')
     
@@ -344,14 +368,14 @@ if __name__ == "__main__":
     args = parser.parser.parse_args()
     
     # Init GitHubPublisher
-    gh_release = GitHubPublish(args.security_token, args.owner, args.repo, args.user, args.password, args.proxy)
-    
+    gh_release = GitHubPublish(args.security_token, args.owner, args.repo, args.user, args.password, args.proxy, args.server)
+
     try:
-        if args.subcommand =='info':
+        if args.subcommand == 'info':
             result = gh_release.info_releases(args.tag, args.latest, args.assets, args.json)
-        elif args.subcommand =='release':
-            result = gh_release.create_release(args.tag, args.name, args.description, args.pre_release, args.target)
-        elif args.subcommand =='delete':
+        elif args.subcommand == 'release':
+            result = gh_release.create_release(args.tag, name=args.name, description=args.description, pre_release=args.pre_release, target=args.target)
+        elif args.subcommand == 'delete':
             for i in range(250, 280):  # what are these magic numbers?
                 try:
                     result = gh_release.delete_release(args.tag)
@@ -374,3 +398,6 @@ if __name__ == "__main__":
     except Exception as exc:
         log.error(exc.message)
         sys.exit(-2)
+    
+if __name__ == "__main__":
+    main()
