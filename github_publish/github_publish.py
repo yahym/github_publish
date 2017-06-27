@@ -262,18 +262,18 @@ class GitHubPublish(object):
         #pprint(assets)
         return assets
     
-    def push (self, method, url, data=None, file=None, headers=None):
+    def push (self, method, url, data=None, file=None, label=None, headers=None):
         f = open('{}'.format(file,), 'rb') if file is not None else None
         data = f if f is not None else data
         response = getattr(requests, method)(
             url,
             proxies=self.proxy,
             data=data,
-            headers={'Content-Type': 'application/x-tar'},
+            headers={'Content-Type': 'application/x-tar'} if headers is None else headers,
             auth=(self.user, self.password)
         )
         f.close() if f is not None else None
-        
+        # pprint(response.text)
         json_response = json.loads(response.text)
         if 'errors' in json_response or 'message' in json_response:
             log.error(method + '\n' + response.text)
@@ -286,13 +286,26 @@ class GitHubPublish(object):
     def _upload_release_asset(self, tag_name, file, label):
         """Upload a release asset
         
-        POST https://<upload_url>/repos/:owner/:repo/releases/:id/assets?name=foo.zip   
+        POST https://<upload_url>/repos/:owner/:repo/releases/:id/assets?name=foo.zip
+
         """
+
+        file_name = file.split(os.sep)[-1]
         release_id = self._get_release_id(tag_name)
-        upload_url = '{}/{}/assets?name={}'.format(self.upload_url, release_id, label)
-        self.push('post', 
+        # TODO: Cannot upload with label, tried it with all re
+        # Info: '{}/{}/assets?name={}' - this is the only pattern that works, but label=null and asset cannot be edited
+        # "upload_url": "http://server.com/api/uploads/repos/user/test/releases/36/assets{?name,label}"
+        # '{}/{}/assets{{?name={},label={}}}' - by the upload_url provided by enterprise server
+        # and other variations
+        # '{}/{}/assets{{?{},{}}}'
+        # '{}/{}/assets?name={},label={}'
+        
+        upload_url = '{}/{}/assets?name={}'.format(self.upload_url, release_id, file_name)
+        # print('upload_url', upload_url)
+        return self.push('post', 
             upload_url,
             file=file,
+            label=label,
             headers={'Content-Type': 'application/x-tar'}
         )
 
@@ -305,8 +318,8 @@ class GitHubPublish(object):
         
         release_id = self._get_release_id(tag_name)
         edit_url = '{}/assets/{}'.format(self.url, asset_id)
-        print(edit_url)
-        self.push('patch', 
+        # print('edit_url', edit_url)
+        return self.push('patch', 
             edit_url, 
             file=file,
             headers={'Content-Type': 'application/x-tar'}
