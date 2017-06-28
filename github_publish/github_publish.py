@@ -111,6 +111,7 @@ class GitHubPublish(object):
             auth=(self.user, self.password)
         )
         release_by_tag = json.loads(response.text)
+        # pprint(release_by_tag)
         return release_by_tag
 
     def _get_latest_release(self):
@@ -143,10 +144,11 @@ class GitHubPublish(object):
         found_file = None
         file_name = file.split(os.sep)[-1]
         values = self._get_release_by_tag(tag_name)
-        for assets in values['assets']:
-            for key, asset in assets.items():
-                if file_name in str(asset):
-                    found_file = assets['id']
+        if 'assets' in values:
+            for assets in values['assets']:
+                for key, asset in assets.items():
+                    if file_name in str(asset):
+                        found_file = assets['id']
         return found_file
             
         
@@ -222,10 +224,11 @@ class GitHubPublish(object):
         Edit
             PATCH /repos/:owner/:repo/releases/:id
         """
-        if self._get_release_by_tag(tag_name)['tag_name'] == tag_name:
-            self._edit_release(tag_name, name, description, draft, pre_release, target)
+        release_by_tag = self._get_release_by_tag(tag_name)
+        if 'tag_name' in release_by_tag and release_by_tag['tag_name'] == tag_name:
+            return self._edit_release(tag_name, name, description, draft, pre_release, target)
         else:
-            self._create_release(tag_name, name, description, draft, pre_release, target)
+            return self._create_release(tag_name, name, description, draft, pre_release, target)
     
     def delete_release(self, tag_name):
         """Delete a release
@@ -262,7 +265,7 @@ class GitHubPublish(object):
         #pprint(assets)
         return assets
     
-    def push (self, method, url, data=None, file=None, label=None, headers=None):
+    def _push (self, method, url, data=None, file=None, label=None, headers=None):
         f = open('{}'.format(file,), 'rb') if file is not None else None
         data = f if f is not None else data
         response = getattr(requests, method)(
@@ -287,7 +290,6 @@ class GitHubPublish(object):
         """Upload a release asset
         
         POST https://<upload_url>/repos/:owner/:repo/releases/:id/assets?name=foo.zip
-
         """
 
         file_name = file.split(os.sep)[-1]
@@ -301,8 +303,8 @@ class GitHubPublish(object):
         # '{}/{}/assets?name={},label={}'
         
         upload_url = '{}/{}/assets?name={}'.format(self.upload_url, release_id, file_name)
-        # print('upload_url', upload_url)
-        return self.push('post', 
+        print('upload_url', upload_url)
+        return self._push('post', 
             upload_url,
             file=file,
             label=label,
@@ -318,8 +320,8 @@ class GitHubPublish(object):
         
         release_id = self._get_release_id(tag_name)
         edit_url = '{}/assets/{}'.format(self.url, asset_id)
-        # print('edit_url', edit_url)
-        return self.push('patch', 
+        print('edit_url', edit_url)
+        return self._push('patch', 
             edit_url, 
             file=file,
             headers={'Content-Type': 'application/x-tar'}
@@ -327,10 +329,11 @@ class GitHubPublish(object):
     
     def upload (self, tag_name, file, label, replace=False):
         asset_id = self._get_asset_id(tag_name, file)
+        print(asset_id)
         if asset_id is not None:
-            self._edit_release_asset(tag_name, file, label, replace, asset_id)
+            return self._edit_release_asset(tag_name, file, label, replace, asset_id)
         else:
-            self._upload_release_asset(tag_name, file, label)
+            return self._upload_release_asset(tag_name, file, label)
             
         
     def _get_release_asset(self, tag_name, artifact_name, latest=False):
