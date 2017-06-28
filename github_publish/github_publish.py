@@ -152,7 +152,7 @@ class GitHubPublish(object):
         return found_file
             
         
-    def _create_release(self, tag_name, name=None, description=None, draft=False, pre_release=False, target=None):
+    def _create_release(self, tag_name, name=None, description=None, draft=None, pre_release=None, target=None):
         """Create a releaseIntegrations Enabled
         
         Users with push access to the repository can create a release.
@@ -166,8 +166,8 @@ class GitHubPublish(object):
             "target_commitish": target,
             "name": name if name else tag_name,
             "body": description if description else tag_name,
-            "draft": bool(draft),
-            "prerelease": bool(pre_release)
+            "draft": json.loads(draft.lower()) if draft else False,
+            "prerelease": json.loads(pre_release.lower()) if pre_release else False
         }
         json_data = json.dumps(data)
         response = requests.post(
@@ -197,8 +197,8 @@ class GitHubPublish(object):
             "target_commitish": target,
             "name": name if name else tag_name,
             "body": description if description else tag_name,
-            "draft": bool(draft),
-            "prerelease": bool(pre_release)
+            "draft": json.loads(draft.lower()) if draft else False,
+            "prerelease": json.loads(pre_release.lower()) if pre_release else False
         }
         json_data = json.dumps(data)
         response = requests.patch(
