@@ -184,7 +184,7 @@ class GitHubPublish(object):
             print("Successfully created release {} for {}".format(tag_name, self.repo))
             return True
     
-    def _edit_release(self, tag_name, name=None, description='', draft=False, pre_release=False, target='master'):
+    def _edit_release(self, tag_name, name=None, description='', draft=None, pre_release=None, target='master'):
         """Edit a release
         
         Users with push access to the repository can edit a release.
