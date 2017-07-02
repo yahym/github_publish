@@ -66,7 +66,8 @@ node(){
             echo 'Generating the application...'
             bat """
                 rem ${python_home}\\Scripts\\pyinstaller.exe github_publish.spec
-                ../pyvenv/scripts/pyinstaller.exe github_publish.spec
+                pyinstaller = pyvenv/scripts/pyinstaller.exe 
+                executeIn 'pyvenv', 'cd ' + repo_name + ' && ' + pyinstaller + ' ' + github_publish.spec
             """
         }
 
