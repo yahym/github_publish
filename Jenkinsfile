@@ -65,7 +65,7 @@ node(){
         stage('Generating application *.exe'){
             echo 'Generating the application...'
             pyinstaller = pyvenv/scripts/pyinstaller.exe 
-            executeIn 'pyvenv', 'cd ' + repo_name + ' && ' + pyinstaller + ' ' + github_publish.spec
+            executeIn 'pyvenv', 'cd ' + repo_name + ' && ' + pyinstaller + ' github_publish.spec'
         }
 
         stage ('Publish to GitHub Releases and internal PyPi'){
