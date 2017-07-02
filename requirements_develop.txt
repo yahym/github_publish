@@ -1,4 +1,4 @@
-requests
+-r requirements.txt
 nose
 coverage
 pylint

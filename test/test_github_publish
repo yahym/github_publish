@@ -14,7 +14,7 @@ def getTestData(filename=""):
     return os.path.dirname(__file__) + "/data/" + filename
 
 class TestGitHubPublish(unittest.TestCase):
-    
+
     def test_class_exists(self):
         self.assertTrue(GitHubPublish)
 

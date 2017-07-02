@@ -63,12 +63,12 @@ efault branch)
 """
 
 class ArgHolder:
-    """Hold the arguments and keyword arguments to 
+    """Hold the arguments and keyword arguments to
        later unpack into a function call"""
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        
+
 class ArgHandler():
     def __init__(self,
                 prog="github_publish",
@@ -94,20 +94,20 @@ class ArgHandler():
         self.latest = ArgHolder('--latest', dest='latest', action='store_true', required = False, help='Latest release  (use - for stdin) (*)')
         self.assets = ArgHolder('--assets', dest='assets', action='store_true', required = False, help='Assets for release  (use - for stdin) (*)')
         self.download_all = ArgHolder('--download_all', dest='download_all', action='store_true', required = False, help='Download all assets for release  (use - for stdin) (*)')
-        
+
         # Init parser
         self.parser = parser(prog=prog)
-        
+
         # Global optional arguments
         self.github_server = self.parser.add_argument('--server', help='GitHub server path e.g. http://github.server.com')
         self.proxy = self.parser.add_argument('--proxy', help='Add the internet proxy, e.g. "http://user:password@server.com:8080"')
         self.version = self.parser.add_argument('--version', action='version', version="%(prog)s ("+__version__+")", help='Get program version')
-        
-        
+
+
          # add a mandatory subcommand available after parsing at args.subcommand
         self.subparsers = self.parser.add_subparsers(dest='subcommand')
         self.subparsers.required = True
-        
+
         #Verbs:
             #delete:
         self.delete = self.subparsers.add_parser('delete', help='Delete a release or a tag')
@@ -117,7 +117,7 @@ class ArgHandler():
         self.delete.add_argument(*self.password.args, **self.password.kwargs)
         self.delete.add_argument(*self.repo.args, **self.repo.kwargs)
         self.delete.add_argument(*self.tag_name.args, **self.tag_name.kwargs)
-            
+
             #download:
         self.download = self.subparsers.add_parser('download', help='Download a release or a tag')
         self.download.add_argument(*self.security_token.args, **self.security_token.kwargs)
@@ -129,7 +129,7 @@ class ArgHandler():
         self.download.add_argument(*self.name.args, **self.name.kwargs)
         self.download.add_argument(*self.latest.args, **self.latest.kwargs)
         self.download.add_argument(*self.download_all.args, **self.download_all.kwargs)
-            
+
             #edit:
         self.edit = self.subparsers.add_parser('edit', help='Edit a release or a tag')
         self.edit.add_argument(*self.security_token.args, **self.security_token.kwargs)
@@ -142,7 +142,7 @@ class ArgHandler():
         self.edit.add_argument(*self.description.args, **self.description.kwargs)
         self.edit.add_argument(*self.draft.args, **self.draft.kwargs)
         self.edit.add_argument(*self.pre_release.args, **self.pre_release.kwargs)
-            
+
             #info:
         self.info = self.subparsers.add_parser('info', help='Info a release or a tag')
         self.info.add_argument(*self.security_token.args, **self.security_token.kwargs)
@@ -155,7 +155,7 @@ class ArgHandler():
         self.info.add_argument(*self.latest.args, **self.latest.kwargs)
         # TODO: assets and tag are grouped
         self.info.add_argument(*self.assets.args, **self.assets.kwargs)
-                
+
             #release:
         self.release = self.subparsers.add_parser('release', help='Release a release or a tag')
         self.release.add_argument(*self.security_token.args, **self.security_token.kwargs)
@@ -169,7 +169,7 @@ class ArgHandler():
         self.release.add_argument(*self.target.args, **self.target.kwargs)
         self.release.add_argument(*self.draft.args, **self.draft.kwargs)
         self.release.add_argument(*self.pre_release.args, **self.pre_release.kwargs)
-            
+
             #upload:
         self.upload = self.subparsers.add_parser('upload', help='Upload a release or a tag')
         self.upload.add_argument(*self.security_token.args, **self.security_token.kwargs)
@@ -182,10 +182,10 @@ class ArgHandler():
         self.upload.add_argument(*self.label.args, **self.label.kwargs)
         self.upload.add_argument(*self.file.args, **self.file.kwargs)
         self.upload.add_argument(*self.replace.args, **self.replace.kwargs)
-        
+
     def handle_args(self, args=None):
         self._args = self.parser.parse_args(args)
-        
+
 if __name__ == '__main__':
 
     #####################
