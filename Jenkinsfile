@@ -41,8 +41,8 @@ def build(version, label) {
                     wmic qfe
                     @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                     @set PYTHON="${pythonPath[version]}"
-                    virtualenv -p %PYTHON% .release
-                    call .release\\Scripts\\activate
+                    virtualenv -p %PYTHON% .release_${version}
+                    call .release_${version}\\Scripts\\activate
                     python --version
                     pip install -r ${repo_name}/requirements_develop.txt
                     python -m coverage run test/run_all.py
