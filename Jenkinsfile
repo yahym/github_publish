@@ -1,9 +1,9 @@
-//properties([
-//    parameters([
-//        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
-//    ]),
-//    pipelineTriggers([])
-//])
+properties([
+    parameters([
+        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
+    ]),
+    pipelineTriggers([])
+])
 
 def configs = [
     [
@@ -95,8 +95,8 @@ for (config in configs) {
         def version = _version
         if (label.contains("windows")) {
             def combinedName = "${label}-${version}"
-            builders[combinedName] = {
-                node() {
+            node() {
+                builders[combinedName] = {
                     ws("jobs/${env.JOB_NAME}/ws"){
                         stage(combinedName) {
                             build(version, label)
