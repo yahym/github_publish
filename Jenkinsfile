@@ -1,45 +1,56 @@
-node(){
-    def python_home = "c:/python-3.5.3"
-    def repo_name = 'github_publish'               //can be extracted from url.git
-    def repo_owner = 'umihai1'                       //can be extracted from url.git
-    def project_name = 'github_publish'                  //can be extracted from the project
-    def version = '1.0.0'                           //can be extracted from __init__.py maybe_' + env.currentBuid.Number
+properties([
+    parameters([
+        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
+    ]),
+    pipelineTriggers([])
+])
 
-    // Try to keep the workspace path as short as possible, other wise you will
-    // get in trouble with python package installation :)
-    // - this is the reason for replacing 'workspace' with 'ws'
-    ws("jobs/${env.JOB_NAME}/ws") {
-        try{
-            stage("Checkout SCM - ${env.JOB_NAME}"){
-                echo 'Already done by Jenkinsfile, but need it again here for now...'
+def repo_name = 'github_publish'               //can be extracted from url.git
+def repo_owner = 'umihai1'                       //can be extracted from url.git
+def project_name = 'github_publish'                  //can be extracted from the project
+def version = '1.0.0'                           //can be extracted from __init__.py maybe_' + env.currentBuid.Number
+
+
+def configs = [
+    [
+        label: 'windows',
+        versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+    ]
+]
+def build(version, label) {
+    try {
+        timeout(time: 30, unit: 'MINUTES') {
+            if (label.contains("windows")) {
+                def pythonPath = [
+                    py26: "C:\\Python26\\python.exe",
+                    py27: "C:\\Python27\\python.exe",
+                    py33: "C:\\Python33\\python.exe",
+                    py34: "C:\\Python34\\python.exe",
+                    py35: "C:\\Python35\\python.exe",
+                    py36: "C:\\Python36\\python.exe"
+                ]
+                
+                echo 'Check out scm...'
                 dir (repo_name){
                     checkout scm
                 }
-            }
-
-            stage("Install Python Virtual Environment") {
-                createVirtualEnv 'pyvenv'
-            }
-
-
-            stage('Preparing PythonEnv 3.5.3'){
-                withCredentials([usernamePassword(credentialsId: '99176a2e-9012-4b19-95f7-926d65985d05', passwordVariable: 'password', usernameVariable: 'user')]) {
-                    executeIn 'pyvenv', 'python --version'
-                    executeIn 'pyvenv', 'pip3 install -r ' + repo_name + '/requirements_develop.txt'
-                }
-            }
-
-            stage('Running tests'){
-                executeIn 'pyvenv', 'python --version'
-                executeIn 'pyvenv', 'cd ' + repo_name + ' && python -m coverage run test/run_all.py'
-                executeIn 'pyvenv', 'cd ' + repo_name + ' && python -m coverage xml -i || exit 0'
-                executeIn 'pyvenv', 'cd ' + repo_name + ' && python -m pylint --rcfile .pylintrc -f parseable -d I0011,R0801 github_publish > pylint.report || exit 0'
-                //executeIn 'pyvenv', 'cd ' + repo_name + ' && python -m nose -v --with-xunit --with-coverage --cover-package=github_publish || exit 0'
-
-            }
-
-            stage ('Reporting'){
-                echo 'CoberturaPublisher...'
+                
+                echo 'Install Python Virtual Environment - ' + version + ' - ' + label
+                bat """
+                    wmic qfe
+                    @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
+                    @set PYTHON="${pythonPath[version]}"
+                    virtualenv -p %PYTHON% .release
+                    call .release\\Scripts\\activate
+                    python --version
+                    pip install -r ${repo_name}/requirements_develop.txt
+                    python -m coverage run test/run_all.py
+                    python -m coverage xml -i
+                    python -m pylint --rcfile .pylintrc -f parseable -d I0011,R0801 github_publish > pylint.report
+                    """
+                
+                echo 'Reporting'
+                echo '...CoberturaPublisher...'
                 step([$class: 'CoberturaPublisher',
                     autoUpdateHealth: false,
                     autoUpdateStability: false,
@@ -52,44 +63,48 @@ node(){
                     sourceEncoding: 'ASCII',
                     zoomCoverageChart: false])
 
-                echo 'junit report...'
+                echo '...junit report...'
                 junit repo_name + '/test-reports/*.xml'
 
-                echo 'WarningsPublisher...'
+                echo '...WarningsPublisher...'
                 step([$class: 'WarningsPublisher',
                     parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + '/pylint.report']],
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
             }
-
+            }
+            //archiveArtifacts artifacts: "wheelhouse/cryptography*.whl"
         }
+    } 
+    catch(err) {
+        currentBuild.result = 'FAILURE'
+        throw err
+    } 
+    finally {
+        echo 'Clean workspace...'
+       cleanWs deleteDirs: true
+    }
+}
 
-        catch(err) {
-            currentBuild.result = 'FAILURE'
-            throw err
-        } 
-        
-        finally {
-            stage("Cleaning workspace"){
-               echo 'Clean workspace...'
-               cleanWs deleteDirs: true
+def builders = [:]
+for (config in configs) {
+    def label = config["label"]
+    def versions = config["versions"]
+    for (_version in versions) {
+        def version = _version
+        if (label.contains("windows")) {
+            def combinedName = "${label}-${version}"
+            builders[combinedName] = {
+                node(label) {
+                    ws("jobs/${env.JOB_NAME}/ws"){
+                        stage(combinedName) {
+                            build(version, label, "")
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-// one of the workaround
-def createVirtualEnv(String name) {
-    bat """
-        py -3 -m venv ${name}
-    """
-}
-
-def executeIn(String environment, String script) {
-    def ws_path = pwd()
-    def env_local = environment
-    bat """
-        "${ws_path}/${env_local}/Scripts/activate.bat" && ${script}
-    """
-}
-
+parallel builders
