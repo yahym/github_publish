@@ -38,10 +38,10 @@ def build(version, label) {
                 echo 'Install Python Virtual Environment - ' + version + ' - ' + label
                 bat """
                     rem wmic qfe
-                    @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
+                    @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                     @set PYTHON="${pythonPath[version]}"
                     python --version
-                    python -m venv -p %PYTHON% .release_${version}
+                    python -m virtualenv -p %PYTHON% .release_${version}
                     call .release_${version}\\Scripts\\activate
                     python --version
                     python -m pip --version
