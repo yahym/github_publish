@@ -51,7 +51,7 @@ def build(version, label) {
                     python -m pip install -r requirements_develop.txt
                     python -m coverage run test/run_all.py
                     python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report || exit 0
+                    python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report && exit 0
                     """
                 
                 echo 'Reporting'
