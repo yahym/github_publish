@@ -8,7 +8,7 @@
 def configs = [
     [
         label: 'windows',
-        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35', 
+        versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'] 
     ]
 ]
 def build(version, label) {
@@ -37,16 +37,17 @@ def build(version, label) {
                 
                 echo 'Install Python Virtual Environment - ' + version + ' - ' + label
                 bat """
-                    wmic qfe
+                    rem wmic qfe
                     @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                     @set PYTHON="${pythonPath[version]}"
                     virtualenv -p %PYTHON% .release_${version}
                     call .release_${version}\\Scripts\\activate
                     python --version
-                    pip install -r ${repo_name}/requirements_develop.txt
+                    cd ${repo_name}
+                    pip install -r requirements_develop.txt
                     python -m coverage run test/run_all.py
                     python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc -f parseable -d I0011,R0801 github_publish > pylint.report
+                    python -m pylint --rcfile .pylintrc -f parseable github_publish > pylint.report
                     """
                 
                 echo 'Reporting'
