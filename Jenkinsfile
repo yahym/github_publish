@@ -1,9 +1,9 @@
-properties([
-    parameters([
-        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
-    ]),
-    pipelineTriggers([])
-])
+//properties([
+//    parameters([
+//        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
+//    ]),
+//    pipelineTriggers([])
+//])
 
 def repo_name = 'github_publish'               //can be extracted from url.git
 def repo_owner = 'umihai1'                       //can be extracted from url.git
