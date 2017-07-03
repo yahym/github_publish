@@ -5,11 +5,6 @@
 //    pipelineTriggers([])
 //])
 
-def repo_name = 'github_publish'               //can be extracted from url.git
-def repo_owner = 'umihai1'                       //can be extracted from url.git
-def project_name = 'github_publish'                  //can be extracted from the project
-
-
 def configs = [
     [
         label: 'windows',
@@ -19,6 +14,10 @@ def configs = [
 def build(version, label) {
     //echo 'version - ' + version
     //echo 'label - ' + label
+    def repo_name = 'github_publish'               //can be extracted from url.git
+    def repo_owner = 'umihai1'                       //can be extracted from url.git
+    def project_name = 'github_publish'                  //can be extracted from the project
+
     try {
         timeout(time: 30, unit: 'MINUTES') {
             if (label.contains("windows")) {
