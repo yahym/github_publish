@@ -1,9 +1,9 @@
-properties([
-    parameters([
-        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
-    ]),
-    pipelineTriggers([])
-])
+//properties([
+//    parameters([
+//        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
+//    ]),
+//    pipelineTriggers([])
+//])
 
 def repo_name = 'github_publish'               //can be extracted from url.git
 def repo_owner = 'umihai1'                       //can be extracted from url.git
@@ -17,6 +17,8 @@ def configs = [
     ]
 ]
 def build(version, label) {
+    echo version
+    echo label
     try {
         timeout(time: 30, unit: 'MINUTES') {
             if (label.contains("windows")) {
@@ -87,15 +89,11 @@ def build(version, label) {
 def builders = [:]
 for (config in configs) {
     def label = config["label"]
-    echo label
     def versions = config["versions"]
-    echo versions
     for (_version in versions) {
         def version = _version
-        echo version
         if (label.contains("windows")) {
             def combinedName = "${label}-${version}"
-            echo combinedName
             builders[combinedName] = {
                 node(label) {
                     ws("jobs/${env.JOB_NAME}/ws"){
