@@ -96,10 +96,8 @@ for (config in configs) {
             def combinedName = "${label}-${version}"
             builders[combinedName] = {
                 node(label) {
-                    ws("jobs/${env.JOB_NAME}/ws"){
-                        stage(combinedName) {
-                            build(version, label)
-                        }
+                    stage(combinedName) {
+                        build(version, label)
                     }
                 }
             }
