@@ -44,8 +44,9 @@ def build(version, label) {
                     python -m virtualenv -p %PYTHON% .release_${version}
                     call .release_${version}\\Scripts\\activate
                     python --version
-                    python -c "import platform; major, minor, patch = platform.python_version_tuple(); print('py'+major+minor)" >set /p var=
-                    if not %var% == ${version} && exit 1
+                    python -c "import platform; major, minor, patch = platform.python_version_tuple(); print('py'+major+minor)" >temp.txt
+                    set /p var=<temp.txt
+                    if not %var% == ${version} exit 1
                     python -m pip --version
                     cd ${repo_name}
                     python -m pip install -r requirements_develop.txt
