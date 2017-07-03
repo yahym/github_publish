@@ -71,11 +71,10 @@ def build(version, label) {
                     parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + '/pylint.report']],
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
-            }
-            }
+            } // end label.contains("windows")
             //archiveArtifacts artifacts: "wheelhouse/cryptography*.whl"
-        }
-    } 
+        } // end timeout(time: 30, unit: 'MINUTES')
+    } // end timeout
     catch(err) {
         currentBuild.result = 'FAILURE'
         throw err
