@@ -17,8 +17,8 @@ def configs = [
     ]
 ]
 def build(version, label) {
-    echo version
-    echo label
+    echo 'version - ' + version
+    echo 'label - ' + label
     try {
         timeout(time: 30, unit: 'MINUTES') {
             if (label.contains("windows")) {
@@ -78,7 +78,7 @@ def build(version, label) {
     } // end timeout
     catch(err) {
         currentBuild.result = 'FAILURE'
-        echo err
+        echo 'err' + err
         throw err
     } 
     finally {
