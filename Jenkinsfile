@@ -95,7 +95,7 @@ for (config in configs) {
         if (label.contains("windows")) {
             def combinedName = "${label}-${version}"
             builders[combinedName] = {
-                node(label) {
+                node() {
                     stage(combinedName) {
                         build(version, label)
                     }
