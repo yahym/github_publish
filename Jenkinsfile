@@ -45,6 +45,7 @@ def build(version, label) {
                     call .release_${version}\\Scripts\\activate
                     python --version
                     python -c "import platform, sys; major, minor, patch = platform.python_version_tuple(); _= sys.exit(0) if 'py'+major+minor == '${version}' else sys.exit(0)"
+                    exit 0
                     python -m pip --version
                     cd ${repo_name}
                     python -m pip install -r requirements_develop.txt
