@@ -8,7 +8,6 @@ properties([
 def repo_name = 'github_publish'               //can be extracted from url.git
 def repo_owner = 'umihai1'                       //can be extracted from url.git
 def project_name = 'github_publish'                  //can be extracted from the project
-def version = '1.0.0'                           //can be extracted from __init__.py maybe_' + env.currentBuid.Number
 
 
 def configs = [
