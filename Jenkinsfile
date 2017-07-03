@@ -13,7 +13,7 @@ def project_name = 'github_publish'                  //can be extracted from the
 def configs = [
     [
         label: 'windows',
-        versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'],
+        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35', 
     ]
 ]
 def build(version, label) {
@@ -78,6 +78,7 @@ def build(version, label) {
     } // end timeout
     catch(err) {
         currentBuild.result = 'FAILURE'
+        echo err
         throw err
     } 
     finally {
