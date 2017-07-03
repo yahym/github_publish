@@ -87,16 +87,20 @@ def build(version, label) {
 def builders = [:]
 for (config in configs) {
     def label = config["label"]
+    echo label
     def versions = config["versions"]
+    echo versions
     for (_version in versions) {
         def version = _version
+        echo version
         if (label.contains("windows")) {
             def combinedName = "${label}-${version}"
+            echo combinedName
             builders[combinedName] = {
                 node(label) {
                     ws("jobs/${env.JOB_NAME}/ws"){
                         stage(combinedName) {
-                            build(version, label, "")
+                            build(version, label)
                         }
                     }
                 }
