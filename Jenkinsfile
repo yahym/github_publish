@@ -95,8 +95,8 @@ for (config in configs) {
         def version = _version
         if (label.contains("windows")) {
             def combinedName = "${label}-${version}"
-            node() {
-                builders[combinedName] = {
+            builders[combinedName] = {
+                node(label) {
                     ws("jobs/${env.JOB_NAME}/ws"){
                         stage(combinedName) {
                             build(version, label)
