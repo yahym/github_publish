@@ -45,12 +45,13 @@ def build(version, label) {
                     call .release_${version}\\Scripts\\activate
                     python --version
                     python -c "import platform, sys; major, minor, patch = platform.python_version_tuple(); print(str('py'+major+minor)); sys.exit(1) if str('py'+major+minor) == '${version}' else sys.exit(1)"
+                    if not %errorlevel% == 0 exit 0
                     python -m pip --version
                     cd ${repo_name}
                     python -m pip install -r requirements_develop.txt
                     python -m coverage run test/run_all.py
-                    python -m coverage xml -i || exit 0
-                    python -m pylint --rcfile .pylintrc -f parseable github_publish > pylint.report || exit 0
+                    python -m coverage xml -i
+                    python -m pylint --rcfile .pylintrc -f parseable github_publish > pylint.report
                     """
                 
                 echo 'Reporting'
