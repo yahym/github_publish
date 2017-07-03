@@ -44,8 +44,9 @@ def build(version, label) {
                     python -m venv -p %PYTHON% .release_${version}
                     call .release_${version}\\Scripts\\activate
                     python --version
+                    python -m pip --version
                     cd ${repo_name}
-                    pip install -r requirements_develop.txt
+                    python -m pip install -r requirements_develop.txt
                     python -m coverage run test/run_all.py
                     python -m coverage xml -i || exit 0
                     python -m pylint --rcfile .pylintrc -f parseable github_publish > pylint.report || exit 0
