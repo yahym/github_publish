@@ -12,8 +12,6 @@ def configs = [
     ]
 ]
 def build(version, label) {
-    //echo 'version - ' + version
-    //echo 'label - ' + label
     def repo_name = 'github_publish'               //can be extracted from url.git
     def repo_owner = 'umihai1'                       //can be extracted from url.git
     def project_name = 'github_publish'                  //can be extracted from the project
@@ -35,7 +33,7 @@ def build(version, label) {
                     checkout scm
                 }
                 
-                echo 'Install Python Virtual Environment - ' + version + ' - ' + label
+                echo 'Install Python Virtual Environment: ' label + '-' + version
                 bat """
                     rem wmic qfe
                     @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
@@ -49,8 +47,8 @@ def build(version, label) {
                     python -m pip --version
                     cd ${repo_name}
                     python -m pip install -r requirements_develop.txt
-                    python -m coverage run test/run_all.py
-                    python -m coverage xml -i
+                    python -m coverage run -p test/run_all.py
+                    rem python -m coverage xml -i
                     python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report || exit 0
                     """
                 
@@ -66,7 +64,7 @@ def build(version, label) {
                     maxNumberOfBuilds: 0,
                     onlyStable: false,
                     sourceEncoding: 'ASCII',
-                    zoomCoverageChart: false])
+                    zoomCoverageChart: true])
 
                 echo '...junit report...'
                 junit repo_name + '/test-reports/*.xml'
@@ -77,17 +75,17 @@ def build(version, label) {
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
             } // end label.contains("windows")
-            //archiveArtifacts artifacts: "wheelhouse/cryptography*.whl"
+            archiveArtifacts artifacts: repo_name +"/*.xml"
+            
         } // end timeout(time: 30, unit: 'MINUTES')
     } // end timeout
     catch(err) {
         currentBuild.result = 'FAILURE'
-        //echo 'err' + err
         throw err
     } 
     finally {
         echo 'Clean workspace...'
-       cleanWs deleteDirs: true
+        cleanWs deleteDirs: true
     }
 }
 
@@ -113,3 +111,37 @@ for (config in configs) {
 }
 
 parallel builders
+
+node(){
+    echo '...Reporting...'
+    echo 'Copy artifacts...'
+    step([$class: 'CopyArtifact', 
+        filter: 'coverage*.xml', 
+        fingerprintArtifacts: true, 
+        projectName: 'github_publish/master', 
+        selector: [$class: 'LastCompletedBuildSelector']])
+    
+    echo 'Combine xml coverage'
+   // deploy 'target/orders.war' to an app host
+    bat """
+        dir
+        @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
+        @set PYTHON="${pythonPath[version]}"
+        python --version
+        python -m coverage combine
+    """
+    
+    
+    echo '...CoberturaPublisher...'
+    step([$class: 'CoberturaPublisher',
+        autoUpdateHealth: false,
+        autoUpdateStability: false,
+        coberturaReportFile: repo_name + '/coverage.xml',
+        failNoReports: false,
+        failUnhealthy: false,
+        failUnstable: false,
+        maxNumberOfBuilds: 0,
+        onlyStable: false,
+        sourceEncoding: 'ASCII',
+        zoomCoverageChart: true])
+}
