@@ -1,7 +1,7 @@
 def configs = [
     [
         label: 'windows',
-        versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'] 
+        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35', 
     ]
 ]
 
