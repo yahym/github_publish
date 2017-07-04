@@ -114,7 +114,8 @@ build node() {
             echo 'Copy artifacts...'
             step([$class: 'CopyArtifact', 
                 filter: '.coverage.*',
-                projectName: 'umihai/github_publish/master'])
+                projectName: 'umihai/github_publish/master',
+                selector: [$class: 'LastCompletedBuildSelector']])
             
             echo 'Combine xml coverage'
             bat """
