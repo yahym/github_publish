@@ -1,7 +1,7 @@
 def configs = [
     [
         label: 'windows',
-        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35', 
+        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35',    
     ]
 ]
 
@@ -115,7 +115,7 @@ build node() {
             step([$class: 'CopyArtifact', 
                 filter: '.coverage.*', 
                 fingerprintArtifacts: true, 
-                projectName: 'github_publish/master', 
+                projectName: 'github_publish', 
                 selector: [$class: 'LastCompletedBuildSelector']])
             
             echo 'Combine xml coverage'
