@@ -1,10 +1,3 @@
-properties([
-    parameters([
-        string(defaultValue: '', description: 'The version from PyPI to build', name: 'BUILD_VERSION')
-    ]),
-    pipelineTriggers([])
-])
-
 def configs = [
     [
         label: 'windows',
@@ -76,7 +69,7 @@ def build(version, label) {
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
             } // end label.contains("windows")
-            archiveArtifacts artifacts: repo_name +"/*.xml"
+            archiveArtifacts artifacts: repo_name + "/.coverage.*"
             
         } // end timeout(time: 30, unit: 'MINUTES')
     } // end timeout
@@ -114,38 +107,38 @@ for (config in configs) {
 
 parallel builders
 node() {
-ws("jobs/${env.JOB_NAME}/ws"){
-stage('Reporting...'){
-    echo 'Copy artifacts...'
-    step([$class: 'CopyArtifact', 
-        filter: 'coverage*.xml', 
-        fingerprintArtifacts: true, 
-        projectName: 'github_publish/master', 
-        selector: [$class: 'LastCompletedBuildSelector']])
-    
-    echo 'Combine xml coverage'
-    bat """
-        dir
-        @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
-        @set PYTHON="${pythonPath[version]}"
-        python --version
-        python -m coverage combine
-    """
-    
-    
-    echo '...CoberturaPublisher...'
-    step([$class: 'CoberturaPublisher',
-        autoUpdateHealth: false,
-        autoUpdateStability: false,
-        coberturaReportFile: repo_name + '/coverage.xml',
-        failNoReports: false,
-        failUnhealthy: false,
-        failUnstable: false,
-        maxNumberOfBuilds: 0,
-        onlyStable: false,
-        sourceEncoding: 'ASCII',
-        zoomCoverageChart: true])
-}
-}
+    ws("jobs/${env.JOB_NAME}/ws"){
+        stage('Reporting...'){
+            echo 'Copy artifacts...'
+            step([$class: 'CopyArtifact', 
+                filter: 'coverage*.xml', 
+                fingerprintArtifacts: true, 
+                projectName: 'github_publish/master', 
+                selector: [$class: 'LastCompletedBuildSelector']])
+            
+            echo 'Combine xml coverage'
+            bat """
+                dir
+                @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
+                @set PYTHON="${pythonPath[version]}"
+                python --version
+                python -m coverage combine
+            """
+            
+            
+            echo '...CoberturaPublisher...'
+            step([$class: 'CoberturaPublisher',
+                autoUpdateHealth: false,
+                autoUpdateStability: false,
+                coberturaReportFile: repo_name + '/coverage.xml',
+                failNoReports: false,
+                failUnhealthy: false,
+                failUnstable: false,
+                maxNumberOfBuilds: 0,
+                onlyStable: false,
+                sourceEncoding: 'ASCII',
+                zoomCoverageChart: true])
+        }
+    }
 }
 
