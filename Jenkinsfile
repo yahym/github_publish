@@ -43,7 +43,7 @@ def build(version, label) {
                     python -m pip install -r requirements_develop.txt
                     python -m coverage run -p test/run_all.py
                     rem python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report || exit 0
+                    python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report.${version} || exit 0
                     """
                 
                 echo 'Reporting'
@@ -65,11 +65,13 @@ def build(version, label) {
 
                 echo '...WarningsPublisher...'
                 step([$class: 'WarningsPublisher',
-                    parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + '/pylint.report']],
+                    parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + '/pylint.report.*']],
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
             } // end label.contains("windows")
             archiveArtifacts artifacts: repo_name + "/.coverage.*"
+            archiveArtifacts artifacts: repo_name + "/pylint.report." + version
+            archiveArtifacts artifacts: repo_name + '/test-reports/*.xml'
             
         } // end timeout(time: 30, unit: 'MINUTES')
     } // end timeout
@@ -106,12 +108,12 @@ for (config in configs) {
 
 
 parallel builders
-node() {
+build node() {
     ws("jobs/${env.JOB_NAME}/ws"){
         stage('Reporting...'){
             echo 'Copy artifacts...'
             step([$class: 'CopyArtifact', 
-                filter: 'coverage*.xml', 
+                filter: '.coverage.*', 
                 fingerprintArtifacts: true, 
                 projectName: 'github_publish/master', 
                 selector: [$class: 'LastCompletedBuildSelector']])
@@ -141,4 +143,5 @@ node() {
         }
     }
 }
+
 
