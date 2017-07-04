@@ -113,10 +113,8 @@ build node() {
         stage('Reporting...'){
             echo 'Copy artifacts...'
             step([$class: 'CopyArtifact', 
-                filter: '.coverage.*', 
-                fingerprintArtifacts: true, 
-                projectName: 'umihai/github_publish/master', 
-                selector: [$class: 'LastCompletedBuildSelector']])
+                filter: '.coverage.*',
+                projectName: 'umihai/github_publish/master'])
             
             echo 'Combine xml coverage'
             bat """
