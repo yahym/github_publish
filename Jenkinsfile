@@ -11,6 +11,7 @@ def configs = [
         versions: ['py26', 'py27', 'py33', 'py34', 'py35', 'py36'] 
     ]
 ]
+
 def build(version, label) {
     def repo_name = 'github_publish'               //can be extracted from url.git
     def repo_owner = 'umihai1'                       //can be extracted from url.git
@@ -110,42 +111,44 @@ for (config in configs) {
     }
 }
 
-parallel builders
 
-node(){
+
+builders['Reporting'] = builders + {
+    node(){
         ws("jobs/${env.JOB_NAME}/ws"){
-        stage('Reporting...'){
-            echo '...Reporting...'
-            echo 'Copy artifacts...'
-            step([$class: 'CopyArtifact', 
-                filter: 'coverage*.xml', 
-                fingerprintArtifacts: true, 
-                projectName: 'github_publish/master', 
-                selector: [$class: 'LastCompletedBuildSelector']])
-            
-            echo 'Combine xml coverage'
-           // deploy 'target/orders.war' to an app host
-            bat """
-                dir
-                @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
-                @set PYTHON="${pythonPath[version]}"
-                python --version
-                python -m coverage combine
-            """
-            
-            
-            echo '...CoberturaPublisher...'
-            step([$class: 'CoberturaPublisher',
-                autoUpdateHealth: false,
-                autoUpdateStability: false,
-                coberturaReportFile: repo_name + '/coverage.xml',
-                failNoReports: false,
-                failUnhealthy: false,
-                failUnstable: false,
-                maxNumberOfBuilds: 0,
-                onlyStable: false,
-                sourceEncoding: 'ASCII',
-                zoomCoverageChart: true])
+            stage('Reporting...'){
+                echo 'Copy artifacts...'
+                step([$class: 'CopyArtifact', 
+                    filter: 'coverage*.xml', 
+                    fingerprintArtifacts: true, 
+                    projectName: 'github_publish/master', 
+                    selector: [$class: 'LastCompletedBuildSelector']])
+                
+                echo 'Combine xml coverage'
+                bat """
+                    dir
+                    @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
+                    @set PYTHON="${pythonPath[version]}"
+                    python --version
+                    python -m coverage combine
+                """
+                
+                
+                echo '...CoberturaPublisher...'
+                step([$class: 'CoberturaPublisher',
+                    autoUpdateHealth: false,
+                    autoUpdateStability: false,
+                    coberturaReportFile: repo_name + '/coverage.xml',
+                    failNoReports: false,
+                    failUnhealthy: false,
+                    failUnstable: false,
+                    maxNumberOfBuilds: 0,
+                    onlyStable: false,
+                    sourceEncoding: 'ASCII',
+                    zoomCoverageChart: true])
+            }
         }
     }
 }
+
+parallel builders
