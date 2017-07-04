@@ -115,7 +115,7 @@ build node() {
             step([$class: 'CopyArtifact', 
                 filter: '.coverage.*', 
                 fingerprintArtifacts: true, 
-                projectName: 'github_publish', 
+                projectName: 'umihai/github_publish/master', 
                 selector: [$class: 'LastCompletedBuildSelector']])
             
             echo 'Combine xml coverage'
