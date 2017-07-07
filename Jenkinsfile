@@ -53,14 +53,14 @@ def build(version, label) {
                     python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report.${version} || exit 0
                     
                     rem Copy .coverage for later processing
-                    mkdir ../coverage
-                    xcopy .coverage.* ../coverage
-                    mkdir ../test-reports
-                    xcopy test-reports/*.* ../test-reports
+                    mkdir ..\\coverage
+                    xcopy .coverage.* ..\\coverage
+                    mkdir ..\\test-reports
+                    xcopy test-reports\\*.* ..\\test-reports
                     
                     rem Copy pylint report for later processing
-                    mkdir ../pylint
-                    xcopy pylint.report ../pylint
+                    mkdir ..\\pylint
+                    xcopy pylint.report ..\\pylint
                     """
                 
                 
@@ -77,7 +77,7 @@ def build(version, label) {
     } 
     finally {
         echo 'Clean workspace...'
-        //cleanWs deleteDirs: true
+        cleanWs deleteDirs: true
     }
 }
 
