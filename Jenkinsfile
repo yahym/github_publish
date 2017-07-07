@@ -106,7 +106,7 @@ for (config in configs) {
 
 
 parallel builders
-build node() {
+build node('windows') {
     try{
         ws("jobs/${env.JOB_NAME}/ws"){
             stage('Reporting...'){
