@@ -55,13 +55,14 @@ def build(version, label) {
 
                     echo Copy .coverage for later processing
                     if not exist ..\\coverage mkdir ..\\coverage
-                    xcopy .coverage.* ..\\coverage
+                    xcopy /s /y .coverage.* ..\\coverage
+                    
                     if not exist ..\\test-reports mkdir ..\\test-reports
-                    xcopy test-reports\\*.* ..\\test-reports
+                    xcopy /s /y test-reports\\*.* ..\\test-reports
 
                     echo Copy pylint report for later processing
                     if not exist ..\\pylint mkdir ..\\pylint
-                    xcopy pylint.* ..\\pylint
+                    xcopy /s /y pylint.* ..\\pylint
                     """
 
 
