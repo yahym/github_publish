@@ -1,3 +1,5 @@
+properties([pipelineTriggers([$class: 'GitHubPushTrigger']])]) //[cron('H/60 * * * *'),
+
 def configs = [
     [
         label: 'windows',
