@@ -109,7 +109,7 @@ parallel builders
 build node('windows') {
     try{
         ws("jobs/${env.JOB_NAME}/ws"){
-            stage('Reporting...'){
+            stage('Reporting'){
                 echo 'Copy artifacts...'
                 echo 'Combine xml coverage'
                 bat """
@@ -155,7 +155,7 @@ build node('windows') {
     }
     finally {
         echo 'Clean workspace...'
-        cleanWs deleteDirs: true
+        //cleanWs deleteDirs: true
     }
 }
 
