@@ -30,6 +30,7 @@ def build(version, label) {
                 echo 'Install Python Virtual Environment: ' + label + '-' + version
                 bat """
                     rem wmic qfe
+                    rem Prepare python virtual environment
                     @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                     @set PYTHON="${pythonPath[version]}"
                     python --version
@@ -40,38 +41,33 @@ def build(version, label) {
                     if not %errorlevel% == 0 exit 1
                     python -m pip --version
                     cd ${repo_name}
+                    
+                    rem Install requirements....
                     python -m pip install -r requirements_develop.txt
+                    
+                    rem Run tests with coverage
                     python -m coverage run -p test/run_all.py
+                    
+                    rem Generate xml coverage report
                     rem python -m coverage xml -i
                     python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report.${version} || exit 0
+                    
+                    rem Copy .coverage for later processing
+                    mkdir ../coverage
+                    xcopy .coverage.* ../coverage
+                    mkdir ../test-reports
+                    xcopy test-reports/*.* ../test-reports
+                    
+                    rem Copy pylint report for later processing
+                    mkdir ../pylint
+                    xcopy pylint.report ../pylint
                     """
                 
-                echo 'Reporting'
-                echo '...CoberturaPublisher...'
-                step([$class: 'CoberturaPublisher',
-                    autoUpdateHealth: false,
-                    autoUpdateStability: false,
-                    coberturaReportFile: repo_name + '/coverage.xml',
-                    failNoReports: false,
-                    failUnhealthy: false,
-                    failUnstable: false,
-                    maxNumberOfBuilds: 0,
-                    onlyStable: false,
-                    sourceEncoding: 'ASCII',
-                    zoomCoverageChart: true])
-
-                echo '...junit report...'
-                junit repo_name + '/test-reports/*.xml'
-
-                echo '...WarningsPublisher...'
-                step([$class: 'WarningsPublisher',
-                    parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + '/pylint.report.*']],
-                    unstableTotalAll: '5000',
-                    usePreviousBuildAsReference: true])
+                
             } // end label.contains("windows")
-            archiveArtifacts artifacts: repo_name + "/.coverage.*"
-            archiveArtifacts artifacts: repo_name + "/pylint.report." + version
-            archiveArtifacts artifacts: repo_name + '/test-reports/*.xml'
+            //archiveArtifacts artifacts: repo_name + "/.coverage.*"
+            //archiveArtifacts artifacts: repo_name + "/pylint.report." + version
+            //archiveArtifacts artifacts: repo_name + '/test-reports/*.xml'
             
         } // end timeout(time: 30, unit: 'MINUTES')
     } // end timeout
@@ -112,16 +108,12 @@ build node() {
     ws("jobs/${env.JOB_NAME}/ws"){
         stage('Reporting...'){
             echo 'Copy artifacts...'
-            step([$class: 'CopyArtifact', 
-                filter: '.coverage.*',
-                projectName: 'umihai/github_publish/master',
-                selector: [$class: 'LastCompletedBuildSelector']])
-            
             echo 'Combine xml coverage'
             bat """
                 @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
                 @set PYTHON="${pythonPath[version]}"
                 python --version
+                cd coverage
                 python -m coverage combine
             """
             
@@ -130,7 +122,7 @@ build node() {
             step([$class: 'CoberturaPublisher',
                 autoUpdateHealth: false,
                 autoUpdateStability: false,
-                coberturaReportFile: repo_name + '/coverage.xml',
+                coberturaReportFile: 'coverage/coverage.xml',
                 failNoReports: false,
                 failUnhealthy: false,
                 failUnstable: false,
@@ -138,6 +130,15 @@ build node() {
                 onlyStable: false,
                 sourceEncoding: 'ASCII',
                 zoomCoverageChart: true])
+
+            echo '...junit report...'
+            junit '/test-reports/*.xml'
+
+            echo '...WarningsPublisher...'
+            step([$class: 'WarningsPublisher',
+                parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + 'pylint/pylint.report.*']],
+                unstableTotalAll: '5000',
+                usePreviousBuildAsReference: true])
         }
     }
 }
