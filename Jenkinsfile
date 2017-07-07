@@ -2,7 +2,6 @@ properties([
     pipelineTriggers([
         cron('H/60 * * * *'),
         [$class: 'GitHubPushTrigger'],
-        [$class: 'GitHubWebHook']
     ])
 ])
 
