@@ -29,6 +29,7 @@ def build(version, label) {
                 
                 echo 'Install Python Virtual Environment: ' + label + '-' + version
                 bat """
+                    @echo on
                     rem wmic qfe
                     rem Prepare python virtual environment
                     @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
