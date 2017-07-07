@@ -1,7 +1,7 @@
 def configs = [
     [
         label: 'windows',
-        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35',    
+        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35',
     ]
 ]
 
@@ -21,12 +21,12 @@ def build(version, label) {
                     py35: "C:\\Python35\\python.exe",
                     py36: "C:\\Python36\\python.exe"
                 ]
-                
+
                 echo 'Check out scm...'
                 dir (repo_name){
                     checkout scm
                 }
-                
+
                 echo 'Install Python Virtual Environment: ' + label + '-' + version
                 bat """
                     @echo on
@@ -42,40 +42,40 @@ def build(version, label) {
                     if not %errorlevel% == 0 exit 1
                     python -m pip --version
                     cd ${repo_name}
-                    
+
                     echo Install requirements....
                     python -m pip install -r requirements_develop.txt
-                    
+
                     echo Run tests with coverage
                     python -m coverage run -p test/run_all.py
-                    
+
                     echo Generate xml coverage report
                     rem python -m coverage xml -i
                     python -m pylint --rcfile .pylintrc github_publish >pylint.report.${version}
-                    
+
                     echo Copy .coverage for later processing
                     mkdir ..\\coverage
                     xcopy .coverage.* ..\\coverage
                     mkdir ..\\test-reports
                     xcopy test-reports\\*.* ..\\test-reports
-                    
+
                     echo Copy pylint report for later processing
                     mkdir ..\\pylint
                     xcopy pylint.* ..\\pylint
                     """
-                
-                
+
+
             } // end label.contains("windows")
             //archiveArtifacts artifacts: repo_name + "/.coverage.*"
             //archiveArtifacts artifacts: repo_name + "/pylint.report." + version
             //archiveArtifacts artifacts: repo_name + '/test-reports/*.xml'
-            
+
         } // end timeout(time: 30, unit: 'MINUTES')
     } // end timeout
     catch(err) {
         currentBuild.result = 'FAILURE'
         throw err
-    } 
+    }
     finally {
         echo 'Clean workspace...'
         //cleanWs deleteDirs: true
@@ -112,15 +112,18 @@ build node() {
                 echo 'Copy artifacts...'
                 echo 'Combine xml coverage'
                 bat """
+                    @echo on
                     @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
                     @set PYTHON="C:\\Python35\\python.exe"
                     python --version
                     python -m pip install coverage
                     cd coverage
+                    dir
                     python -m coverage combine
+                    python -m coverage xml -i
                 """
-                
-                
+
+
                 echo '...CoberturaPublisher...'
                 step([$class: 'CoberturaPublisher',
                     autoUpdateHealth: false,
@@ -148,7 +151,7 @@ build node() {
     catch(err) {
         currentBuild.result = 'UNSTABLE'
         throw err
-    } 
+    }
     finally {
         echo 'Clean workspace...'
         cleanWs deleteDirs: true
