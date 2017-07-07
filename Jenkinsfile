@@ -143,7 +143,7 @@ build node('windows') {
 
                 echo '...WarningsPublisher...'
                 step([$class: 'WarningsPublisher',
-                    parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + 'pylint/pylint.report.*']],
+                    parserConfigurations: [[parserName: 'PYLint', pattern: 'pylint/pylint.report.*']],
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
             }
