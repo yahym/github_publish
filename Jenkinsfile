@@ -43,23 +43,23 @@ def build(version, label) {
                     python -m pip --version
                     cd ${repo_name}
                     
-                    rem Install requirements....
+                    echo Install requirements....
                     python -m pip install -r requirements_develop.txt
                     
-                    rem Run tests with coverage
+                    echo Run tests with coverage
                     python -m coverage run -p test/run_all.py
                     
-                    rem Generate xml coverage report
+                    echo Generate xml coverage report
                     rem python -m coverage xml -i
                     python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report.${version} || exit 0
                     
-                    rem Copy .coverage for later processing
+                    echo Copy .coverage for later processing
                     mkdir ..\\coverage
                     xcopy .coverage.* ..\\coverage
                     mkdir ..\\test-reports
                     xcopy test-reports\\*.* ..\\test-reports
                     
-                    rem Copy pylint report for later processing
+                    echo Copy pylint report for later processing
                     mkdir ..\\pylint
                     xcopy pylint.report ..\\pylint
                     """
