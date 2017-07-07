@@ -81,7 +81,7 @@ def build(version, label) {
     } 
     finally {
         echo 'Clean workspace...'
-        cleanWs deleteDirs: true
+        //cleanWs deleteDirs: true
     }
 }
 
@@ -119,7 +119,6 @@ build node() {
             
             echo 'Combine xml coverage'
             bat """
-                dir
                 @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
                 @set PYTHON="${pythonPath[version]}"
                 python --version
