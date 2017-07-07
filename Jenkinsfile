@@ -1,4 +1,11 @@
-properties([pipelineTriggers([cron('H/60 * * * *'), [$class: 'GitHubPushTrigger']])])
+properties([
+    pipelineTriggers([
+        cron('H/60 * * * *'),
+        [$class: 'GitHubPushTrigger'],
+        [$class: 'GitHubWebHook']
+    ])
+])
+
 def configs = [
     [
         label: 'windows',
@@ -108,7 +115,6 @@ for (config in configs) {
 
 parallel builders
 build node('windows') {
-    
     ws("jobs/${env.JOB_NAME}/ws"){
         try{
             stage('Reporting'){
@@ -121,7 +127,6 @@ build node('windows') {
                     python --version
                     python -m pip install coverage
                     cd coverage
-                    dir
                     python -m coverage combine
                     python -m coverage xml -i
                 """
@@ -159,7 +164,4 @@ build node('windows') {
             cleanWs deleteDirs: true
         }
     }
-    
 }
-
-
