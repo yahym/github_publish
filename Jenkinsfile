@@ -149,13 +149,9 @@ build node('windows') {
             }
         }
     }
-    catch(err) {
-        currentBuild.result = 'UNSTABLE'
-        throw err
-    }
     finally {
         echo 'Clean workspace...'
-        //cleanWs deleteDirs: true
+        cleanWs deleteDirs: true
     }
 }
 
