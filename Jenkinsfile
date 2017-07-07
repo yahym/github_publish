@@ -5,15 +5,6 @@ def configs = [
     ]
 ]
 
-def pythonPath = [
-    py26: "C:\\Python26\\python.exe",
-    py27: "C:\\Python27\\python.exe",
-    py33: "C:\\Python33\\python.exe",
-    py34: "C:\\Python34\\python.exe",
-    py35: "C:\\Python35\\python.exe",
-    py36: "C:\\Python36\\python.exe"
-]
-
 def build(version, label) {
     def repo_name = 'github_publish'               //can be extracted from url.git
     def repo_owner = 'umihai1'                       //can be extracted from url.git
@@ -22,7 +13,15 @@ def build(version, label) {
     try {
         timeout(time: 30, unit: 'MINUTES') {
             if (label.contains("windows")) {
-
+                def pythonPath = [
+                    py26: "C:\\Python26\\python.exe",
+                    py27: "C:\\Python27\\python.exe",
+                    py33: "C:\\Python33\\python.exe",
+                    py34: "C:\\Python34\\python.exe",
+                    py35: "C:\\Python35\\python.exe",
+                    py36: "C:\\Python36\\python.exe"
+                ]
+                
                 echo 'Check out scm...'
                 dir (repo_name){
                     checkout scm
@@ -113,8 +112,9 @@ build node() {
             echo 'Combine xml coverage'
             bat """
                 @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
-                @set PYTHON="${pythonPath[version]}"
+                @set PYTHON="C:\\Python35\\python.exe"
                 python --version
+                python -m pip install coverage
                 cd coverage
                 python -m coverage combine
             """
