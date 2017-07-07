@@ -78,7 +78,7 @@ def build(version, label) {
     } 
     finally {
         echo 'Clean workspace...'
-        cleanWs deleteDirs: true
+        //cleanWs deleteDirs: true
     }
 }
 
@@ -106,42 +106,52 @@ for (config in configs) {
 
 parallel builders
 build node() {
-    ws("jobs/${env.JOB_NAME}/ws"){
-        stage('Reporting...'){
-            echo 'Copy artifacts...'
-            echo 'Combine xml coverage'
-            bat """
-                @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
-                @set PYTHON="C:\\Python35\\python.exe"
-                python --version
-                python -m pip install coverage
-                cd coverage
-                python -m coverage combine
-            """
-            
-            
-            echo '...CoberturaPublisher...'
-            step([$class: 'CoberturaPublisher',
-                autoUpdateHealth: false,
-                autoUpdateStability: false,
-                coberturaReportFile: 'coverage/coverage.xml',
-                failNoReports: false,
-                failUnhealthy: false,
-                failUnstable: false,
-                maxNumberOfBuilds: 0,
-                onlyStable: false,
-                sourceEncoding: 'ASCII',
-                zoomCoverageChart: true])
+    try{
+        ws("jobs/${env.JOB_NAME}/ws"){
+            stage('Reporting...'){
+                echo 'Copy artifacts...'
+                echo 'Combine xml coverage'
+                bat """
+                    @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
+                    @set PYTHON="C:\\Python35\\python.exe"
+                    python --version
+                    python -m pip install coverage
+                    cd coverage
+                    python -m coverage combine
+                """
+                
+                
+                echo '...CoberturaPublisher...'
+                step([$class: 'CoberturaPublisher',
+                    autoUpdateHealth: false,
+                    autoUpdateStability: false,
+                    coberturaReportFile: 'coverage/coverage.xml',
+                    failNoReports: false,
+                    failUnhealthy: false,
+                    failUnstable: false,
+                    maxNumberOfBuilds: 0,
+                    onlyStable: false,
+                    sourceEncoding: 'ASCII',
+                    zoomCoverageChart: true])
 
-            echo '...junit report...'
-            junit '/test-reports/*.xml'
+                echo '...junit report...'
+                junit '/test-reports/*.xml'
 
-            echo '...WarningsPublisher...'
-            step([$class: 'WarningsPublisher',
-                parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + 'pylint/pylint.report.*']],
-                unstableTotalAll: '5000',
-                usePreviousBuildAsReference: true])
+                echo '...WarningsPublisher...'
+                step([$class: 'WarningsPublisher',
+                    parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + 'pylint/pylint.report.*']],
+                    unstableTotalAll: '5000',
+                    usePreviousBuildAsReference: true])
+            }
         }
+    }
+    catch(err) {
+        currentBuild.result = 'UNSTABLE'
+        throw err
+    } 
+    finally {
+        echo 'Clean workspace...'
+        cleanWs deleteDirs: true
     }
 }
 
