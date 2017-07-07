@@ -51,7 +51,7 @@ def build(version, label) {
                     
                     echo Generate xml coverage report
                     rem python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report.${version} || exit 0
+                    python -m pylint --rcfile .pylintrc github_publish >pylint.report.${version}
                     
                     echo Copy .coverage for later processing
                     mkdir ..\\coverage
