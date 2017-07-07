@@ -54,13 +54,13 @@ def build(version, label) {
                     python -m pylint --rcfile .pylintrc github_publish >pylint.report.${version}
 
                     echo Copy .coverage for later processing
-                    mkdir ..\\coverage
+                    if not exist ..\\coverage mkdir ..\\coverage
                     xcopy .coverage.* ..\\coverage
-                    mkdir ..\\test-reports
+                    if not exist ..\\test-reports mkdir ..\\test-reports
                     xcopy test-reports\\*.* ..\\test-reports
 
                     echo Copy pylint report for later processing
-                    mkdir ..\\pylint
+                    if not exist ..\\pylint mkdir ..\\pylint
                     xcopy pylint.* ..\\pylint
                     """
 
