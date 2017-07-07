@@ -61,7 +61,7 @@ def build(version, label) {
                     
                     echo Copy pylint report for later processing
                     mkdir ..\\pylint
-                    xcopy pylint.report ..\\pylint
+                    xcopy pylint.* ..\\pylint
                     """
                 
                 
