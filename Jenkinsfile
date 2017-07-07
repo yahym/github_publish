@@ -108,8 +108,9 @@ for (config in configs) {
 
 parallel builders
 build node('windows') {
-    try{
-        ws("jobs/${env.JOB_NAME}/ws"){
+    
+    ws("jobs/${env.JOB_NAME}/ws"){
+        try{
             stage('Reporting'){
                 echo 'Copy artifacts...'
                 echo 'Combine xml coverage'
@@ -149,11 +150,16 @@ build node('windows') {
                     usePreviousBuildAsReference: true])
             }
         }
+        catch(err) {
+            currentBuild.result = 'FAILURE'
+            throw err
+        }
+        finally {
+            echo 'Clean workspace...'
+            cleanWs deleteDirs: true
+        }
     }
-    finally {
-        echo 'Clean workspace...'
-        cleanWs deleteDirs: true
-    }
+    
 }
 
 
