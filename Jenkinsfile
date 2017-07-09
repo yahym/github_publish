@@ -8,7 +8,7 @@ properties([
 def configs = [
     [
         label: 'windows',
-        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35',
+        versions: ['py27', 'py33', 'py34', 'py35', 'py36'] //'py26', 
     ]
 ]
 
@@ -58,7 +58,7 @@ def build(version, label) {
 
                     echo Generate xml coverage report
                     rem python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc github_publish >pylint.report.${version}
+                    python -m pylint --rcfile .pylintrc -f parsable github_publish >pylint.report.${version}
 
                     echo Copy .coverage for later processing
                     if not exist ..\\coverage mkdir ..\\coverage
@@ -145,7 +145,10 @@ for (config in configs) {
 
                                 echo '...WarningsPublisher...'
                                 step([$class: 'WarningsPublisher',
-                                    parserConfigurations: [[parserName: 'PYLint', pattern: 'pylint/pylint.report.36']],
+                                    parserConfigurations: [
+                                        [parserName: 'PYLint', 
+                                        pattern: 'pylint/pylint.report.36']
+                                    ],
                                     unstableTotalAll: '5000',
                                     usePreviousBuildAsReference: true])
                             }
