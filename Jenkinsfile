@@ -145,7 +145,7 @@ for (config in configs) {
 
                                 echo '...WarningsPublisher...'
                                 step([$class: 'WarningsPublisher',
-                                    parserConfigurations: [[parserName: 'PYLint', pattern: 'pylint/pylint.report.*']],
+                                    parserConfigurations: [[parserName: 'PYLint', pattern: 'pylint/pylint.report.36']],
                                     unstableTotalAll: '5000',
                                     usePreviousBuildAsReference: true])
                             }
