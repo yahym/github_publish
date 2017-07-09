@@ -58,7 +58,7 @@ def build(version, label) {
 
                     echo Generate xml coverage report
                     rem python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc -f parsable github_publish >pylint.report.${version}
+                    python -m pylint --rcfile .pylintrc github_publish >pylint.report.${version}
 
                     echo Copy .coverage for later processing
                     if not exist ..\\coverage mkdir ..\\coverage
@@ -159,7 +159,7 @@ node('windows') {
             }
         }
         catch(err) {
-            currentBuild.result = 'SUCCESS'
+            currentBuild.result = 'FAILURE'
             throw err
         }
         finally {
