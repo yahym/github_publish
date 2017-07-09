@@ -115,7 +115,7 @@ for (config in configs) {
 parallel builders
 build node('windows') {
     ws("jobs/${env.JOB_NAME}/ws"){
-        try{
+
             stage('Reporting'){
                 echo 'Copy artifacts...'
                 echo 'Combine xml coverage'
@@ -149,18 +149,11 @@ build node('windows') {
 
                 echo '...WarningsPublisher...'
                 step([$class: 'WarningsPublisher',
-                    parserConfigurations: [[parserName: 'PYLint', pattern: 'pylint/pylint.report.36']],
+                    parserConfigurations: [[parserName: 'PYLint', pattern: 'pylint/pylint.report.*']],
                     unstableTotalAll: '5000',
                     usePreviousBuildAsReference: true])
             }
-        }
-        catch(err) {
-            currentBuild.result = 'FAILURE'
-            throw err
-        }
-        finally {
-            echo 'Clean workspace...'
-            cleanWs deleteDirs: true
-        }
+
+        
     }
 }
