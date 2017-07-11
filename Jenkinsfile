@@ -1,7 +1,14 @@
+properties([
+    pipelineTriggers([
+        cron('H/60 * * * *'),
+        [$class: 'GitHubPushTrigger'],
+    ])
+])
+
 def configs = [
     [
         label: 'windows',
-        versions: ['py36'] //'py26', 'py27', 'py33', 'py34', 'py35',    
+        versions: ['py27', 'py33', 'py34', 'py35', 'py36'] //'py26', 
     ]
 ]
 
@@ -21,15 +28,17 @@ def build(version, label) {
                     py35: "C:\\Python35\\python.exe",
                     py36: "C:\\Python36\\python.exe"
                 ]
-                
+
                 echo 'Check out scm...'
                 dir (repo_name){
                     checkout scm
                 }
-                
+
                 echo 'Install Python Virtual Environment: ' + label + '-' + version
                 bat """
+                    @echo on
                     rem wmic qfe
+                    rem Prepare python virtual environment
                     @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
                     @set PYTHON="${pythonPath[version]}"
                     python --version
@@ -40,48 +49,44 @@ def build(version, label) {
                     if not %errorlevel% == 0 exit 1
                     python -m pip --version
                     cd ${repo_name}
+
+                    echo Install requirements....
                     python -m pip install -r requirements_develop.txt
+
+                    echo Run tests with coverage
                     python -m coverage run -p test/run_all.py
+
+                    echo Generate xml coverage report
                     rem python -m coverage xml -i
-                    python -m pylint --rcfile .pylintrc -f parseable github_publish >pylint.report.${version} || exit 0
+                    python -m pylint --rcfile .pylintrc github_publish >pylint.report.${version}
+
+                    echo Copy .coverage for later processing
+                    if not exist ..\\coverage mkdir ..\\coverage
+                    xcopy /s /y .coverage.* ..\\coverage
+                    
+                    if not exist ..\\test-reports mkdir ..\\test-reports
+                    xcopy /s /y test-reports\\*.* ..\\test-reports
+
+                    echo Copy pylint report for later processing
+                    if not exist ..\\pylint mkdir ..\\pylint
+                    xcopy /s /y pylint.* ..\\pylint
                     """
-                
-                echo 'Reporting'
-                echo '...CoberturaPublisher...'
-                step([$class: 'CoberturaPublisher',
-                    autoUpdateHealth: false,
-                    autoUpdateStability: false,
-                    coberturaReportFile: repo_name + '/coverage.xml',
-                    failNoReports: false,
-                    failUnhealthy: false,
-                    failUnstable: false,
-                    maxNumberOfBuilds: 0,
-                    onlyStable: false,
-                    sourceEncoding: 'ASCII',
-                    zoomCoverageChart: true])
 
-                echo '...junit report...'
-                junit repo_name + '/test-reports/*.xml'
 
-                echo '...WarningsPublisher...'
-                step([$class: 'WarningsPublisher',
-                    parserConfigurations: [[parserName: 'PYLint', pattern: repo_name + '/pylint.report.*']],
-                    unstableTotalAll: '5000',
-                    usePreviousBuildAsReference: true])
             } // end label.contains("windows")
-            archiveArtifacts artifacts: repo_name + "/.coverage.*"
-            archiveArtifacts artifacts: repo_name + "/pylint.report." + version
-            archiveArtifacts artifacts: repo_name + '/test-reports/*.xml'
-            
+            //archiveArtifacts artifacts: repo_name + "/.coverage.*"
+            //archiveArtifacts artifacts: repo_name + "/pylint.report." + version
+            //archiveArtifacts artifacts: repo_name + '/test-reports/*.xml'
+
         } // end timeout(time: 30, unit: 'MINUTES')
     } // end timeout
     catch(err) {
         currentBuild.result = 'FAILURE'
         throw err
-    } 
+    }
     finally {
         echo 'Clean workspace...'
-        cleanWs deleteDirs: true
+        //cleanWs deleteDirs: true
     }
 }
 
@@ -108,39 +113,58 @@ for (config in configs) {
 
 
 parallel builders
-build node() {
+
+node('windows') {
     ws("jobs/${env.JOB_NAME}/ws"){
-        stage('Reporting...'){
-            echo 'Copy artifacts...'
-            step([$class: 'CopyArtifact', 
-                filter: '.coverage.*',
-                projectName: 'umihai/github_publish/master',
-                selector: [$class: 'LastCompletedBuildSelector']])
-            
-            echo 'Combine xml coverage'
-            bat """
-                dir
-                @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
-                @set PYTHON="${pythonPath[version]}"
-                python --version
-                python -m coverage combine
-            """
-            
-            
-            echo '...CoberturaPublisher...'
-            step([$class: 'CoberturaPublisher',
-                autoUpdateHealth: false,
-                autoUpdateStability: false,
-                coberturaReportFile: repo_name + '/coverage.xml',
-                failNoReports: false,
-                failUnhealthy: false,
-                failUnstable: false,
-                maxNumberOfBuilds: 0,
-                onlyStable: false,
-                sourceEncoding: 'ASCII',
-                zoomCoverageChart: true])
+        try{
+            stage('Reporting'){
+                echo 'Copy artifacts...'
+                echo 'Combine xml coverage'
+                bat """
+                    @echo on
+                    @set PATH="C:\\Python35";"C:\\Python35\\Scripts";%PATH%
+                    @set PYTHON="C:\\Python35\\python.exe"
+                    python --version
+                    python -m pip install coverage
+                    cd coverage
+                    python -m coverage combine
+                    python -m coverage xml -i
+                """
+
+
+                echo '...CoberturaPublisher...'
+                step([$class: 'CoberturaPublisher',
+                    autoUpdateHealth: false,
+                    autoUpdateStability: false,
+                    coberturaReportFile: 'coverage/coverage.xml',
+                    failNoReports: false,
+                    failUnhealthy: false,
+                    failUnstable: false,
+                    maxNumberOfBuilds: 0,
+                    onlyStable: false,
+                    sourceEncoding: 'ASCII',
+                    zoomCoverageChart: true])
+
+                echo '...junit report...'
+                junit '/test-reports/*.xml'
+
+                echo '...WarningsPublisher...'
+                step([$class: 'WarningsPublisher',
+                    parserConfigurations: [
+                        [parserName: 'PYLint', 
+                        pattern: 'pylint/pylint.report.py36']
+                    ],
+                    unstableTotalAll: '5000',
+                    usePreviousBuildAsReference: true])
+            }
+        }
+        catch(err) {
+            currentBuild.result = 'FAILURE'
+            throw err
+        }
+        finally {
+            echo 'Clean workspace...'
+            cleanWs deleteDirs: true
         }
     }
 }
-
-
