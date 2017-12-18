@@ -13,8 +13,13 @@ python:
   - "nightly"
 # command to install dependencies
 install:
-  - pip install -r requirements_develop.txt
+  - pip install -r requirements_dev_std.txt
 # command to run tests
 script:
-  - pytest # or py.test for Python versions 3.5 and below
-  - test/run_all.py
+  - set -e
+  - python --version
+  - python -m coverage run test/run_all.py
+  - python -m coverage xml -i --include */github_publish/*
+  - python-codacy-coverage -r coverage.xml
+
+after_success:

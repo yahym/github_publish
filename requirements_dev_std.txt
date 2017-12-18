@@ -1,0 +1,5 @@
+-r requirements.txt
+coverage
+pylint
+xmlrunner
+codacy-coverage
