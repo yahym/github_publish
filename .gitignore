@@ -102,3 +102,6 @@ ENV/
 
 debug/
 test-reports/
+
+_build/
+debug/

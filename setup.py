@@ -14,9 +14,15 @@ from os import path, listdir, walk
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-#with open(path.join(here, 'README.adoc'), encoding='utf-8') as f:
-    #long_description = f.read()
 long_description = ''
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
+with open(path.join('github_publish', 'version.py'), 'r') as f:
+    for line in f:
+        if line.startswith('__version__'):
+            version = line.split('=')[-1].strip().strip("'")
+            break
 
 # Get requirements for current package
 with open('requirements.txt') as f:
@@ -29,7 +35,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.0',
+    version=version,
 
     description='GitHub publisher',
     long_description=long_description,
@@ -65,6 +71,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 
     # What does your project relate to?

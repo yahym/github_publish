@@ -1,6 +1,5 @@
 import argparse as ap
 from pprint import pprint
-__version__ = r'0.0.1'
 
 HELP = """
 Global options:

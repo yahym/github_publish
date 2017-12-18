@@ -1,4 +1,6 @@
 -r requirements.txt
+sphinx-argparse
+sphinx_autobuild
 coverage
 pylint
 xmlrunner
