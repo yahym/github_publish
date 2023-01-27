@@ -224,6 +224,10 @@ class GitHubPublish(object):
         Edit
             PATCH /repos/:owner/:repo/releases/:id
         """
+        if description and os.path.isfile(description):
+            with open(description, "r") as f:
+                description = f.read()
+
         release_by_tag = self._get_release_by_tag(tag_name)
         if 'tag_name' in release_by_tag and release_by_tag['tag_name'] == tag_name:
             return self._edit_release(tag_name, name, description, draft, pre_release, target)
@@ -237,7 +241,7 @@ class GitHubPublish(object):
         """
         release_id = self._get_release_id(tag_name)
         if not release_id:
-            log.error("Could not find release for tag name: %s", tag_name)
+            log.error("Could not find release for tag name: {}".format(tag_name))
             return False
         response = requests.delete(
             '{}/{}'.format(self.url, release_id),
@@ -354,7 +358,7 @@ class GitHubPublish(object):
         )
         with open(artifact_name, 'wb') as f:
             if asset_response.text == 'Not Found':
-                log.error(asset_response.text + ' -> %s, %s', tag_name, artifact_name)
+                log.error(asset_response.text + ' -> {}, {}'.format(tag_name, artifact_name))
                 return False
             else:
                 asset_response.raise_for_status()
@@ -368,7 +372,11 @@ class GitHubPublish(object):
         tag_name = self._get_latest_release_tag() if latest else tag_name
         release_id = self._get_release_id(tag_name)
         assets_url = '{}/{}/assets'.format(self.url, release_id)
-        assets_response = requests.get(url=assets_url, proxies=self.proxy, auth=(self.user, self.password))
+        assets_response = requests.get(
+            url=assets_url,
+            proxies=self.proxy,
+            auth=(self.user, self.password)
+        )
         assets = json.loads(assets_response.text)
 
         for asset in assets:
@@ -384,7 +392,7 @@ class GitHubPublish(object):
 
                 json_response = json.loads(assets_response.text)
                 if 'errors' in json_response or 'message' in json_response:
-                    log.error(asset_response.text + ' -> %s, %s', tag_name, artifact_name)
+                    log.error(asset_response.text + ' -> {}, {}'.format(tag_name, artifact_name))
                 else:
                     asset_response.raise_for_status()
                     for block in asset_response.iter_content(1024):
@@ -435,13 +443,29 @@ def main():
     gh_release = GitHubPublish(
         args.security_token,
         args.owner,
-        args.repo, args.user, args.password, args.proxy, args.server)
+        args.repo,
+        args.user,
+        args.password,
+        args.proxy,
+        args.server
+    )
 
     try:
         if args.subcommand == 'info':
-            result = gh_release.info_releases(args.tag_name, args.latest, args.assets, args.json)
+            result = gh_release.info_releases(
+                args.tag_name,
+                args.latest,
+                args.assets,
+                args.json
+            )
         elif args.subcommand == 'release':
-            result = gh_release.release(args.tag_name, name=args.name, description=args.description, pre_release=args.pre_release, target=args.target)
+            result = gh_release.release(
+                args.tag_name,
+                name=args.name,
+                description=args.description,
+                pre_release=args.pre_release,
+                target=args.target
+            )
         elif args.subcommand == 'delete':
             for i in range(250, 280):  # what are these magic numbers?
                 try:
