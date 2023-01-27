@@ -1,6 +1,6 @@
 import argparse as ap
 from pprint import pprint
-from . import __version__
+from version import __version__
 
 HELP = """
 Global options:
