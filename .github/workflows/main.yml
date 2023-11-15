@@ -28,4 +28,3 @@ jobs:
       # see: https://github.com/ymyzk/tox-gh-actions
       - name: Run tests
         run: tox
-
