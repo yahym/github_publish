@@ -3,25 +3,19 @@
 """
 Main test function to execute all tests found in the current directory
 """
-
+from pathlib import Path
 import sys
-import logging
+import unittest
+
 import xmlrunner
 
 
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
-
-
 def main():
-    tests = unittest.TestLoader().discover('.', 'test_*.py')
-    testResult=xmlrunner.XMLTestRunner(output='test-reports').run(tests)
-    if testResult.wasSuccessful():
-        return 0
-    else:
-        return 1
+    tests = unittest.TestLoader().discover(".", "test_*.py")
+    testResult = xmlrunner.XMLTestRunner(output=str(Path(".").resolve() / "test-reports")).run(tests)
 
-if __name__ == '__main__':
+    return not testResult.wasSuccessful()
+
+
+if __name__ == "__main__":
     sys.exit(main())

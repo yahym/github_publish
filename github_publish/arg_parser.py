@@ -1,5 +1,6 @@
 import argparse as ap
 from pprint import pprint
+
 from version import __version__
 
 HELP = """
@@ -62,55 +63,108 @@ efault branch)
  failure to upload will remove the original asset too)
 """
 
+
 class ArgHolder:
     """Hold the arguments and keyword arguments to
-       later unpack into a function call"""
+    later unpack into a function call"""
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
 
-class ArgHandler():
-    def __init__(self,
-                prog="github_publish",
-                version="0.0.1",
-                parser=ap.ArgumentParser):
+
+class ArgHandler:
+    def __init__(self, prog="github_publish", version="0.0.1", parser=ap.ArgumentParser):
         self.help = HELP
-        self.security_token = ArgHolder('-s', '--security-token', dest='security_token', help='Github token (required if $GITHUB_TOKEN not set)')
-        self.owner = ArgHolder('-o', '--owner', dest='owner', required = False, help='Github repo owner or organisation (required if $GITHUB_USER not set)')
-        self.user = ArgHolder('-u', '--user', dest='user', help='Github repo user or organisation (required if $GITHUB_USER not set)')
-        self.password = ArgHolder('-p', '--password', dest='password',  required = False, help='Github user password (required if $GITHUB_PASSWORD not set)')
-        self.repo = ArgHolder('-r', '--repo', dest='repo', help='Github repo (required if $GITHUB_REPO not set')
-        self.tag_name = ArgHolder('-t', '--tag_name', dest='tag_name', help='Git tag of release to delete (*)')
-        self.name = ArgHolder('-n', '--name', dest='name', help='Name of the file (*)')
-        self.latest = ArgHolder('-l', '--latest', dest='latest', help='Download latest release (required if tag is not specified')
-        self.description = ArgHolder('-d', '--description', dest='description', help='New release description, use - for reading a description from stdin (defaults to tag')
-        self.draft = ArgHolder('--draft', dest='draft', help='The release is a draft')
-        self.pre_release = ArgHolder('--pre-release', dest='pre_release', help='The release is a pre-release')
-        self.json = ArgHolder('-j', '--json', dest='json', required = False, help='Emit info as JSON instead of text')
-        self.target = ArgHolder('-c', '--target', dest='target', help='Commit SHA or branch to create release of (defaults to the repository default branch')
-        self.label = ArgHolder('-l', '--label', dest='label', help='Label (description) of the file')
-        self.file = ArgHolder('-f', '--file', dest='file', help='File to upload (use - for stdin) (*)')
-        self.replace = ArgHolder('-R', '--replace', dest='replace', required = False, help='Replace asset with same name if it already exists (WARNING: not atomic, failure to upload will remove the original asset too')
-        self.latest = ArgHolder('--latest', dest='latest', action='store_true', required = False, help='Latest release  (use - for stdin) (*)')
-        self.assets = ArgHolder('--assets', dest='assets', action='store_true', required = False, help='Assets for release  (use - for stdin) (*)')
-        self.download_all = ArgHolder('--download_all', dest='download_all', action='store_true', required = False, help='Download all assets for release  (use - for stdin) (*)')
+        self.security_token = ArgHolder(
+            "-s", "--security-token", dest="security_token", help="Github token (required if $GITHUB_TOKEN not set)"
+        )
+        self.owner = ArgHolder(
+            "-o",
+            "--owner",
+            dest="owner",
+            required=False,
+            help="Github repo owner or organisation (required if $GITHUB_USER not set)",
+        )
+        self.user = ArgHolder(
+            "-u", "--user", dest="user", help="Github repo user or organisation (required if $GITHUB_USER not set)"
+        )
+        self.password = ArgHolder(
+            "-p",
+            "--password",
+            dest="password",
+            required=False,
+            help="Github user password (required if $GITHUB_PASSWORD not set)",
+        )
+        self.repo = ArgHolder("-r", "--repo", dest="repo", help="Github repo (required if $GITHUB_REPO not set")
+        self.tag_name = ArgHolder("-t", "--tag_name", dest="tag_name", help="Git tag of release to delete (*)")
+        self.name = ArgHolder("-n", "--name", dest="name", help="Name of the file (*)")
+        self.latest = ArgHolder(
+            "-l", "--latest", dest="latest", help="Download latest release (required if tag is not specified"
+        )
+        self.description = ArgHolder(
+            "-d",
+            "--description",
+            dest="description",
+            help="New release description, use - for reading a description from stdin (defaults to tag",
+        )
+        self.draft = ArgHolder("--draft", dest="draft", help="The release is a draft")
+        self.pre_release = ArgHolder("--pre-release", dest="pre_release", help="The release is a pre-release")
+        self.json = ArgHolder("-j", "--json", dest="json", required=False, help="Emit info as JSON instead of text")
+        self.target = ArgHolder(
+            "-c",
+            "--target",
+            dest="target",
+            help="Commit SHA or branch to create release of (defaults to the repository default branch",
+        )
+        self.label = ArgHolder("-l", "--label", dest="label", help="Label (description) of the file")
+        self.file = ArgHolder("-f", "--file", dest="file", help="File to upload (use - for stdin) (*)")
+        self.replace = ArgHolder(
+            "-R",
+            "--replace",
+            dest="replace",
+            required=False,
+            help="Replace asset with same name if it already exists (WARNING: not atomic, failure to upload will remove the original asset too",
+        )
+        self.latest = ArgHolder(
+            "--latest", dest="latest", action="store_true", required=False, help="Latest release  (use - for stdin) (*)"
+        )
+        self.assets = ArgHolder(
+            "--assets",
+            dest="assets",
+            action="store_true",
+            required=False,
+            help="Assets for release  (use - for stdin) (*)",
+        )
+        self.download_all = ArgHolder(
+            "--download_all",
+            dest="download_all",
+            action="store_true",
+            required=False,
+            help="Download all assets for release  (use - for stdin) (*)",
+        )
 
         # Init parser
         self.parser = parser(prog=prog)
 
         # Global optional arguments
-        self.github_server = self.parser.add_argument('--server', help='GitHub server path e.g. http://github.server.com')
-        self.proxy = self.parser.add_argument('--proxy', help='Add the internet proxy, e.g. "http://user:password@server.com:8080"')
-        self.version = self.parser.add_argument('--version', action='version', version="%(prog)s ("+__version__+")", help='Get program version')
+        self.github_server = self.parser.add_argument(
+            "--server", help="GitHub server path e.g. http://github.server.com"
+        )
+        self.proxy = self.parser.add_argument(
+            "--proxy", help='Add the internet proxy, e.g. "http://user:password@server.com:8080"'
+        )
+        self.version = self.parser.add_argument(
+            "--version", action="version", version="%(prog)s (" + __version__ + ")", help="Get program version"
+        )
 
-
-         # add a mandatory subcommand available after parsing at args.subcommand
-        self.subparsers = self.parser.add_subparsers(dest='subcommand')
+        # add a mandatory subcommand available after parsing at args.subcommand
+        self.subparsers = self.parser.add_subparsers(dest="subcommand")
         self.subparsers.required = True
 
-        #Verbs:
-            #delete:
-        self.delete = self.subparsers.add_parser('delete', help='Delete a release or a tag')
+        # Verbs:
+        # delete:
+        self.delete = self.subparsers.add_parser("delete", help="Delete a release or a tag")
         self.delete.add_argument(*self.security_token.args, **self.security_token.kwargs)
         self.delete.add_argument(*self.owner.args, **self.owner.kwargs)
         self.delete.add_argument(*self.user.args, **self.user.kwargs)
@@ -118,8 +172,8 @@ class ArgHandler():
         self.delete.add_argument(*self.repo.args, **self.repo.kwargs)
         self.delete.add_argument(*self.tag_name.args, **self.tag_name.kwargs)
 
-            #download:
-        self.download = self.subparsers.add_parser('download', help='Download a release or a tag')
+        # download:
+        self.download = self.subparsers.add_parser("download", help="Download a release or a tag")
         self.download.add_argument(*self.security_token.args, **self.security_token.kwargs)
         self.download.add_argument(*self.owner.args, **self.owner.kwargs)
         self.download.add_argument(*self.user.args, **self.user.kwargs)
@@ -130,8 +184,8 @@ class ArgHandler():
         self.download.add_argument(*self.latest.args, **self.latest.kwargs)
         self.download.add_argument(*self.download_all.args, **self.download_all.kwargs)
 
-            #edit:
-        self.edit = self.subparsers.add_parser('edit', help='Edit a release or a tag')
+        # edit:
+        self.edit = self.subparsers.add_parser("edit", help="Edit a release or a tag")
         self.edit.add_argument(*self.security_token.args, **self.security_token.kwargs)
         self.edit.add_argument(*self.owner.args, **self.owner.kwargs)
         self.edit.add_argument(*self.user.args, **self.user.kwargs)
@@ -143,8 +197,8 @@ class ArgHandler():
         self.edit.add_argument(*self.draft.args, **self.draft.kwargs)
         self.edit.add_argument(*self.pre_release.args, **self.pre_release.kwargs)
 
-            #info:
-        self.info = self.subparsers.add_parser('info', help='Info a release or a tag')
+        # info:
+        self.info = self.subparsers.add_parser("info", help="Info a release or a tag")
         self.info.add_argument(*self.security_token.args, **self.security_token.kwargs)
         self.info.add_argument(*self.owner.args, **self.owner.kwargs)
         self.info.add_argument(*self.user.args, **self.user.kwargs)
@@ -156,8 +210,8 @@ class ArgHandler():
         # TODO: assets and tag are grouped
         self.info.add_argument(*self.assets.args, **self.assets.kwargs)
 
-            #release:
-        self.release = self.subparsers.add_parser('release', help='Release a release or a tag')
+        # release:
+        self.release = self.subparsers.add_parser("release", help="Release a release or a tag")
         self.release.add_argument(*self.security_token.args, **self.security_token.kwargs)
         self.release.add_argument(*self.owner.args, **self.owner.kwargs)
         self.release.add_argument(*self.user.args, **self.user.kwargs)
@@ -170,8 +224,8 @@ class ArgHandler():
         self.release.add_argument(*self.draft.args, **self.draft.kwargs)
         self.release.add_argument(*self.pre_release.args, **self.pre_release.kwargs)
 
-            #upload:
-        self.upload = self.subparsers.add_parser('upload', help='Upload a release or a tag')
+        # upload:
+        self.upload = self.subparsers.add_parser("upload", help="Upload a release or a tag")
         self.upload.add_argument(*self.security_token.args, **self.security_token.kwargs)
         self.upload.add_argument(*self.owner.args, **self.owner.kwargs)
         self.upload.add_argument(*self.user.args, **self.user.kwargs)
@@ -186,8 +240,8 @@ class ArgHandler():
     def handle_args(self, args=None):
         self._args = self.parser.parse_args(args)
 
-if __name__ == '__main__':
 
+if __name__ == "__main__":
     #####################
     # Argument handling #
     #####################

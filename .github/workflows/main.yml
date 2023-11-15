@@ -1,0 +1,30 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install packages
+        shell: bash
+        run: |
+            pip install tox tox-gh-actions
+
+      # see: https://github.com/ymyzk/tox-gh-actions
+      - name: Run tests
+        run: tox

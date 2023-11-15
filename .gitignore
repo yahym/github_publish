@@ -105,3 +105,4 @@ test-reports/
 
 _build/
 debug/
+*pyvenv*/
