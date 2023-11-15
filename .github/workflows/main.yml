@@ -30,14 +30,16 @@ jobs:
         run: tox
 
       - name: Upload packages
-        name: github_publish_package
+
         uses: actions/upload-artifact@v3
         with:
+          name: github_publish_package_${{matrix.os}}
           path: ./htmlcov/*.*
 
       - name: Upload reports
-        name: github_publish_reports
+
         uses: actions/upload-artifact@v3
         with:
+          name: github_publish_reports_${{matrix.os}}
           path: ./report/*.*
 
