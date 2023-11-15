@@ -29,8 +29,10 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
+          name: github_publish_wheel
           path: ./dist/*.whl
 
       - uses: actions/upload-artifact@v3
         with:
+          name: github_publish_tar_gz
           path: ./dist/*.tar.gz

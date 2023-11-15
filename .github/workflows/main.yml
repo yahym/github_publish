@@ -29,13 +29,6 @@ jobs:
       - name: Run tests
         run: tox
 
-      - name: Upload packages
-
-        uses: actions/upload-artifact@v3
-        with:
-          name: github_publish_package_${{matrix.os}}
-          path: ./dist/*.*
-
       - name: Upload reports
 
         uses: actions/upload-artifact@v3
