@@ -1,4 +1,4 @@
-pip install -U black ruff && ^
+pip install -U black ruff build && ^
 cd .. && ^
 ruff check --fix ./github_publish/ && ^
 ruff check --fix ./setup.py && ^
