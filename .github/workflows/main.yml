@@ -28,3 +28,16 @@ jobs:
       # see: https://github.com/ymyzk/tox-gh-actions
       - name: Run tests
         run: tox
+
+      - name: Upload packages
+        name: github_publish_package
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./htmlcov/*.*
+
+      - name: Upload reports
+        name: github_publish_reports
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./report/*.*
+
